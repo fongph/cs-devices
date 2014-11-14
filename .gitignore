@@ -1,5 +1,6 @@
 /vendor
 /reports
 /nbproject
+/wiki
 /tests/config.php
 composer.lock

@@ -115,7 +115,7 @@ class Manager
     {
         $uniqueId = $this->db->quote($devUniqueId);
 
-        return $this->getDb()->query("SELECT `id` FROM `devices` WHERE `unique_id` = {$uniqueId} LIMIT 1")->fetchColumn() > 0;
+        return $this->getDb()->query("SELECT `id` FROM `devices` WHERE `unique_id` = {$uniqueId} LIMIT 1")->fetchColumn();
     }
 
     public function getUserDeviceAddCode($userId)
