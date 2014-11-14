@@ -111,7 +111,7 @@ class Manager
         return $this->getDb()->query("SELECT COUNT(*) FROM `devices` WHERE `unique_id` = {$uniqueId}")->fetchColumn() > 0;
     }
 
-    public function getDevId($devUniqueId)
+    public function getDeviceId($devUniqueId)
     {
         $uniqueId = $this->db->quote($devUniqueId);
 
