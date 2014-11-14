@@ -1,0 +1,25 @@
+{
+    "name": "boomers/cs-devices",
+    "version": "0.5",
+    "type": "library",
+    "license": "MIT",
+    "repositories": [
+        {
+            "type": "git",
+            "url": "git@bitbucket.org:boomersweb/cs-models.git"
+        }
+    ],
+    "require": {
+        "php": ">=5.4.0",
+        "boomers/cs-models": "dev-master",
+        "predis/predis": "1.0.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "4.*"
+    },
+    "autoload": {
+        "psr-4": {
+            "CS\\Devices\\": "src/"
+        }
+    }
+}

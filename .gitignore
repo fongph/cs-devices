@@ -1,0 +1,5 @@
+/vendor
+/reports
+/nbproject
+/tests/config.php
+composer.lock
