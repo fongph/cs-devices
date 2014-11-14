@@ -138,19 +138,28 @@ class Manager
                 ->setUserId($userId)
                 ->save();
 
-        return true;
+        $limitations = new Limitations($this->db);
+        $limitations->updateDeviceLimitations($deviceRecord->getId(), true);
+
+        return $deviceRecord->getId();
     }
 
     public function isDeviceLimitationAllowed($devId, $limitationName)
     {
         $limitations = new Limitations($this->db);
-        $limitations->isAllowed($devId, $limitationName);
+        return $limitations->isAllowed($devId, $limitationName);
     }
 
     public function decrementLimitation($devId, $limitationName)
     {
         $limitations = new Limitations($this->db);
-        return $limitations->decrementLimitation($devId, $limitationName);
+        $limitations->decrementLimitation($devId, $limitationName);
+    }
+
+    public function updateDeviceLimitations($devId, $resetCount = false)
+    {
+        $limitations = new Limitations($this->db);
+        $limitations->updateDeviceLimitations($devId, $resetCount);
     }
 
 }

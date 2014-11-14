@@ -3,9 +3,9 @@
 namespace CS\Devices;
 
 use PDO,
-    CS\Models\Site\SiteRecord,
-    CS\Models\User\UserRecord,
-    CS\Models\Device\DeviceRecord;
+    CS\Models\Product\ProductRecord,
+    CS\Models\Device\Limitation\DeviceLimitationRecord,
+    CS\Models\Device\Limitation\DeviceLimitationNotFoundException;
 
 /**
  * Description of Limitations
@@ -97,7 +97,7 @@ class Limitations
 
     public function decrementLimitation($devId, $limitationName)
     {
-        if (!in_array($limitationName, array(self::SMS, self::CALL))) {
+        if ($limitationName != self::SMS || $limitationName != self::CALL) {
             throw new InvalidLimitationNameException("Bad limitation name or limitation not support decrementation!");
         }
 
@@ -113,10 +113,167 @@ class Limitations
                                     `{$limitationName}` < {$maxValue}
                                 LIMIT 1");
     }
-    
-    private function getDeviceLimitationsList($devId)
+
+    private function getDeviceLicenseLimitationsList($devId, $productType = ProductRecord::TYPE_PACKAGE)
     {
-        $this->db->query("SELECT * FROM ``");
+        $devIdValue = $this->db->quote($devId);
+        $this->db->query("SELECT
+                                l.`sms`,
+                                l.`call`,
+                                l.`gps`,
+                                l.`block_number`,
+                                l.`block_words`,
+                                l.`browser_history`,
+                                l.`browser_bookmark`,
+                                l.`contact`,
+                                l.`calendar`,
+                                l.`photos`,
+                                l.`viber`,
+                                l.`whatsapp`,
+                                l.`video`,
+                                l.`skype`,
+                                l.`facebook`,
+                                l.`vk`,
+                                l.`emails`,
+                                l.`applications`,
+                                l.`keylogger`
+                            FROM `licenses` lic
+                            INNER JOIN `products` p ON lic.`product_id` = p.`id`
+                            INNER JOIN `limitations` l ON p.`limitation_id` = l.`id`
+                            WHERE 
+                                lic.`device_id` = {$devIdValue} AND
+                                lic.`status` = 'active'
+                                lic.`product_type` = '{$productType}'")->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function updateDeviceLimitations($devId, $resetCount = false)
+    {
+        $mainPackages = $this->getDeviceLicenseLimitationsList($devId);
+
+        if (count($mainPackages) > 1) {
+            throw new InvalidLimitationsCountException("Device can have only one main package!");
+        }
+
+        $deviceLimitation = new DeviceLimitationRecord($this->db);
+
+        try {
+            $deviceLimitation->loadByDeviceId($devId);
+        } catch (DeviceLimitationNotFoundException $e) {
+            // device limitations not found
+        }
+
+        if (count($mainPackages) == 0) {
+            $this->clearLimitation($deviceLimitation)->save();
+            return;
+        }
+
+        $deviceLimitation = $this->mergeLimitations($deviceLimitation, $mainPackages[0], $resetCount);
+
+        $options = $this->getDeviceLicenseLimitationsList($devId, ProductRecord::TYPE_OPTION);
+
+        foreach ($options as $optionLimitations) {
+            $deviceLimitation = $this->mergeLimitations($deviceLimitation, $optionLimitations, true);
+        }
+
+        $deviceLimitation->save();
+    }
+
+    private function mergeLimitations(DeviceLimitationRecord $deviceLimitation, $limitations, $resetCount = false)
+    {
+        foreach ($limitations as $name => $value) {
+            switch ($name) {
+                case self::SMS:
+                    if ($resetCount) {
+                        $deviceLimitation->setSms(max($deviceLimitation->getSms(), $value));
+                    }
+                    break;
+                case self::CALL:
+                    if ($resetCount) {
+                        $deviceLimitation->setCall(max($deviceLimitation->getCall(), $value));
+                    }
+                    break;
+                case self::GPS:
+                    $deviceLimitation->setGps(max($deviceLimitation->getGps(), $value));
+                    break;
+                case self::BLOCK_NUMBER:
+                    $deviceLimitation->setBlockNumber(max($deviceLimitation->getBlockNumber(), $value));
+                    break;
+                case self::BLOCK_WORDS:
+                    $deviceLimitation->setBlockWords(max($deviceLimitation->getBlockWords(), $value));
+                    break;
+                case self::BROWSER_HISTORY:
+                    $deviceLimitation->setBrowserHistory(max($deviceLimitation->getBrowserHistory(), $value));
+                    break;
+                case self::BROWSER_BOOKMARK:
+                    $deviceLimitation->setBrowserBookmark(max($deviceLimitation->getBrowserBookmark(), $value));
+                    break;
+                case self::CONTACT:
+                    $deviceLimitation->setContact(max($deviceLimitation->getContact(), $value));
+                    break;
+                case self::CALENDAR:
+                    $deviceLimitation->setCalendar(max($deviceLimitation->getCalendar(), $value));
+                    break;
+                case self::PHOTOS:
+                    $deviceLimitation->setPhotos(max($deviceLimitation->getPhotos(), $value));
+                    break;
+                case self::VIBER:
+                    $deviceLimitation->setViber(max($deviceLimitation->getViber(), $value));
+                    break;
+                case self::WHATSAPP:
+                    $deviceLimitation->setWhatsapp(max($deviceLimitation->getWhatsapp(), $value));
+                    break;
+                case self::VIDEO:
+                    $deviceLimitation->setVideo(max($deviceLimitation->getVideo(), $value));
+                    break;
+                case self::SKYPE:
+                    $deviceLimitation->setSkype(max($deviceLimitation->getSkype(), $value));
+                    break;
+                case self::FACEBOOK:
+                    $deviceLimitation->setFacebook(max($deviceLimitation->getFacebook(), $value));
+                    break;
+                case self::VK:
+                    $deviceLimitation->setVk(max($deviceLimitation->getVk(), $value));
+                    break;
+                case self::EMAILS:
+                    $deviceLimitation->setEmails(max($deviceLimitation->getEmails(), $value));
+                    break;
+                case self::APPLICATIONS:
+                    $deviceLimitation->setApplications(max($deviceLimitation->getApplications(), $value));
+                    break;
+                case self::KEYLOGGER:
+                    $deviceLimitation->setVk(max($deviceLimitation->getVk(), $value));
+                    break;
+            }
+        }
+
+        return $deviceLimitation;
+    }
+
+    private function clearLimitation(DeviceLimitationRecord $deviceLimitation)
+    {
+        $limitations = array(
+            self::SMS => 0,
+            self::CALL => 0,
+            self::GPS => 0,
+            self::BLOCK_NUMBER => 0,
+            self::BLOCK_WORDS => 0,
+            self::BROWSER_HISTORY => 0,
+            self::BROWSER_BOOKMARK => 0,
+            self::CONTACT => 0,
+            self::CALENDAR => 0,
+            self::PHOTOS => 0,
+            self::VIBER => 0,
+            self::WHATSAPP => 0,
+            self::VIDEO => 0,
+            self::SKYPE => 0,
+            self::FACEBOOK => 0,
+            self::VK => 0,
+            self::EMAILS => 0,
+            self::APPLICATIONS => 0,
+            self::KEYLOGGER => 0
+        );
+
+        return $this->mergeLimitations($deviceLimitation, $limitations);
     }
 
 }
