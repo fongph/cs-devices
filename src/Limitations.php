@@ -118,9 +118,9 @@ class Limitations
     private function getDeviceLicenseLimitationsList($devId, $productType = ProductRecord::TYPE_PACKAGE)
     {
         $devIdValue = $this->db->quote($devId);
-        $status = $this->db->quote(LicenseRecord::STATUS_AVAILABLE);
+        $status = $this->db->quote(LicenseRecord::STATUS_ACTIVE);
         
-        $this->db->query("SELECT
+        return $this->db->query("SELECT
                                 l.`sms`,
                                 l.`call`,
                                 l.`gps`,
