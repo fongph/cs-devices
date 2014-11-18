@@ -170,7 +170,7 @@ class Manager
         $escapedUserId = $this->db->quote($userId);
         $status = $this->db->quote(LicenseRecord::STATUS_AVAILABLE);
 
-        $this->db->query("SELECT 
+        return $this->db->query("SELECT 
                                 COUNT(*) 
                             FROM `licenses` 
                             WHERE 
@@ -186,7 +186,7 @@ class Manager
         $productType = $this->db->quote(ProductRecord::TYPE_PACKAGE);
         $status = $this->db->quote(LicenseRecord::STATUS_ACTIVE);
 
-        $this->db->query("SELECT 
+        return $this->db->query("SELECT 
                                 COUNT(*) 
                             FROM `licenses` 
                             WHERE
