@@ -232,7 +232,7 @@ class Manager
                                                     `device_id` = d.`id` AND
                                                     `status` = {$status} AND
                                                     `product_type` = {$productType} 
-                                                LIMIT 1) = 0")->fetch(\PDO::FETCH_KEY_PAIR);
+                                                LIMIT 1) = 0")->fetchAll(\PDO::FETCH_KEY_PAIR);
     }
 
 }
