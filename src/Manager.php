@@ -219,7 +219,7 @@ class Manager
 
         return $this->getDb()->query("SELECT
                                             d.`id`,
-                                            d.`name`,
+                                            d.`name`
                                         FROM `devices` d
                                         WHERE
                                             d.`user_id` = {$escapedUserId} AND
