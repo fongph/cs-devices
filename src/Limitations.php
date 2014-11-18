@@ -117,6 +117,8 @@ class Limitations
     private function getDeviceLicenseLimitationsList($devId, $productType = ProductRecord::TYPE_PACKAGE)
     {
         $devIdValue = $this->db->quote($devId);
+        $status = $this->db->quote(LicenseRecord::STATUS_ACTIVE);
+        
         $this->db->query("SELECT
                                 l.`sms`,
                                 l.`call`,
@@ -142,7 +144,7 @@ class Limitations
                             INNER JOIN `limitations` l ON p.`limitation_id` = l.`id`
                             WHERE 
                                 lic.`device_id` = {$devIdValue} AND
-                                lic.`status` = 'active'
+                                lic.`status` = {$status} AND
                                 lic.`product_type` = '{$productType}'")->fetchAll(PDO::FETCH_ASSOC);
     }
 

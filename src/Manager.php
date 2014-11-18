@@ -209,6 +209,8 @@ class Manager
         } else {
             $this->updateDeviceLimitations($deviceId);
         }
+        
+        return true;
     }
 
     public function getUserUnAssignedDevicesList($userId)
