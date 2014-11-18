@@ -162,7 +162,7 @@ class Limitations
         try {
             $deviceLimitation->loadByDeviceId($devId);
         } catch (DeviceLimitationNotFoundException $e) {
-            // device limitations not found
+            $deviceLimitation->setDeviceId($devId);
         }
 
         if (count($mainPackages) == 0) {
@@ -170,12 +170,12 @@ class Limitations
             return;
         }
 
-        $deviceLimitation = $this->mergeLimitations($deviceLimitation, $mainPackages[0], $resetCount);
+        $resultLimitation = $this->mergeLimitations($deviceLimitation, $mainPackages[0], $resetCount);
 
         $options = $this->getDeviceLicenseLimitationsList($devId, ProductRecord::TYPE_OPTION);
 
         foreach ($options as $optionLimitations) {
-            $deviceLimitation = $this->mergeLimitations($deviceLimitation, $optionLimitations, true);
+            $resultLimitation = $this->mergeLimitations($resultLimitation, $optionLimitations, true);
         }
 
         $deviceLimitation->save();
