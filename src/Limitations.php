@@ -4,6 +4,7 @@ namespace CS\Devices;
 
 use PDO,
     CS\Models\Product\ProductRecord,
+    CS\Models\License\LicenseRecord,
     CS\Models\Device\Limitation\DeviceLimitationRecord,
     CS\Models\Device\Limitation\DeviceLimitationNotFoundException;
 
