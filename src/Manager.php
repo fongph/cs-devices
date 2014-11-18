@@ -213,7 +213,7 @@ class Manager
                 $this->updateDeviceLimitations($deviceId);
             }
 
-            return true;
+            return $this->db->commit();
         } catch (\Exception $e) {
             $this->db->rollBack();
             throw $e;
