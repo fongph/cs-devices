@@ -65,3 +65,20 @@ $manager->decrementLimitation($devId, $limitationName);
 // метод объеденяет все пакеты и микропакеты и формирует единственную запись лимитов для устройства
 $manager->updateDeviceLimitations($devId, $resetCount);
 ```
+
+Работа с лицензиями
+```
+#!php
+<?php
+
+$manager = new CS\Devices\Manager($db);
+
+// проверяем на существование лицензии пользователя со статусом available (активная лицензия без устройства)
+$manager->isUserLicenseAvailable($id, $userId);
+
+// проверяем на существование лицензии пакета для девайса
+$manager->hasDevicePackageLicense($devId);
+
+// привязываем устройство к лицензии, также будут обновлены лимиты устройства
+$manager->assignLicenseToDevice($licenseId, $deviceId);
+```
