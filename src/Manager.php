@@ -198,19 +198,26 @@ class Manager
 
     public function assignLicenseToDevice($licenseId, $deviceId)
     {
-        $license = new LicenseRecord($this->db);
-        $license->load($licenseId)
-                ->setDeviceId($deviceId)
-                ->setStatus(LicenseRecord::STATUS_ACTIVE)
-                ->save();
+        $this->db->beginTransaction();
 
-        if ($license->getProductType() == ProductRecord::TYPE_PACKAGE) {
-            $this->updateDeviceLimitations($deviceId, true);
-        } else {
-            $this->updateDeviceLimitations($deviceId);
+        try {
+            $license = new LicenseRecord($this->db);
+            $license->load($licenseId)
+                    ->setDeviceId($deviceId)
+                    ->setStatus(LicenseRecord::STATUS_ACTIVE)
+                    ->save();
+
+            if ($license->getProductType() == ProductRecord::TYPE_PACKAGE) {
+                $this->updateDeviceLimitations($deviceId, true);
+            } else {
+                $this->updateDeviceLimitations($deviceId);
+            }
+
+            return true;
+        } catch (\Exception $e) {
+            $this->db->rollBack();
+            throw $e;
         }
-        
-        return true;
     }
 
     public function getUserUnAssignedDevicesList($userId)
