@@ -5,7 +5,9 @@ namespace CS\Devices;
 use PDO,
     CS\Models\Site\SiteRecord,
     CS\Models\User\UserRecord,
-    CS\Models\Device\DeviceRecord;
+    CS\Models\Device\DeviceRecord,
+    CS\Models\License\LicenseRecord,
+    CS\Models\Product\ProductRecord;
 
 /**
  * Description of Manager
@@ -160,6 +162,53 @@ class Manager
     {
         $limitations = new Limitations($this->db);
         $limitations->updateDeviceLimitations($devId, $resetCount);
+    }
+
+    public function isUserLicenseAvailable($id, $userId)
+    {
+        $escapedId = $this->db->quote($id);
+        $escapedUserId = $this->db->quote($userId);
+        $status = $this->db->quote(LicenseRecord::STATUS_AVAILABLE);
+
+        $this->db->query("SELECT 
+                                COUNT(*) 
+                            FROM `licenses` 
+                            WHERE 
+                                `id` = {$escapedId} AND
+                                `user_id` = {$escapedUserId} AND
+                                `status` = {$status}
+                            LIMIT 1")->fetchColumn() > 0;
+    }
+
+    public function hasDevicePackageLicense($devId)
+    {
+        $escapedDevId = $this->db->quote($devId);
+        $productType = $this->db->quote(ProductRecord::TYPE_PACKAGE);
+        $status = $this->db->quote(LicenseRecord::STATUS_ACTIVE);
+
+        $this->db->query("SELECT 
+                                COUNT(*) 
+                            FROM `licenses` 
+                            WHERE
+                                `device_id` = {$escapedDevId} AND
+                                `product_type` = {$productType} AND
+                                `status` = {$status}
+                            LIMIT 1")->fetchColumn() > 0;
+    }
+
+    public function assignLicenseToDevice($licenseId, $deviceId)
+    {
+        $license = new LicenseRecord($this->db);
+        $license->load($licenseId)
+                ->setDeviceId($deviceId)
+                ->setStatus(LicenseRecord::STATUS_ACTIVE)
+                ->save();
+
+        if ($license->getProductType() == ProductRecord::TYPE_PACKAGE) {
+            $this->updateDeviceLimitations($deviceId, true);
+        } else {
+            $this->updateDeviceLimitations($deviceId);
+        }
     }
 
 }
