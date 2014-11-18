@@ -211,4 +211,28 @@ class Manager
         }
     }
 
+    public function getUserUnAssignedDevicesList($userId)
+    {
+        $escapedUserId = $this->getDb()->quote($userId);
+        $productType = $this->db->quote(ProductRecord::TYPE_PACKAGE);
+        $status = $this->db->quote(LicenseRecord::STATUS_ACTIVE);
+
+        return $this->getDb()->query("SELECT
+                                            d.`id`,
+                                            d.`name`,
+                                        FROM `devices` d
+                                        WHERE
+                                            d.`user_id` = {$escapedUserId} AND
+                                            d.`deleted` = 0 AND
+                                            (SELECT 
+                                                    COUNT(*) 
+                                                FROM `licenses` 
+                                                WHERE 
+                                                    `user_id` = d.`user_id` AND
+                                                    `device_id` = d.`id` AND
+                                                    `status` = {$status} AND
+                                                    `product_type` = {$productType} 
+                                                LIMIT 1) = 0")->fetch(\PDO::FETCH_KEY_PAIR);
+    }
+
 }
