@@ -277,5 +277,19 @@ class Manager
                     d.`user_id` = {$escapedUserId} AND
                     d.`deleted` = 0")->fetchAll(\PDO::FETCH_ASSOC | \PDO::FETCH_UNIQUE);
     }
-
+    
+    public function deleteDevice($deviceId)
+    {
+        $this->getDevice($deviceId)
+                ->setDeleted()
+                ->save();
+        
+        $status = $this->db->quote(LicenseRecord::STATUS_INACTIVE);
+        $escapedDeviceId = $this->getDb()->quote($deviceId);
+        
+        $this->getDb()->exec("UPDATE `licenses` SET `status` = {$status} AND `device_id` = NULL WHERE `device_id` = {$escapedDeviceId}");
+        
+        $this->updateDeviceLimitations($deviceId, true);
+    }
+    
 }
