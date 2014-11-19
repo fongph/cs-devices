@@ -25,6 +25,11 @@ class Manager
      * @var PDO
      */
     protected $db;
+    
+    /**
+     * (20 min)
+     */
+    const ONLINE_PERIOD = 1200;
 
     public function __construct(\PDO $db)
     {
@@ -242,6 +247,35 @@ class Manager
                                                     `status` = {$status} AND
                                                     `product_type` = {$productType} 
                                                 LIMIT 1) = 0")->fetchAll(\PDO::FETCH_KEY_PAIR);
+    }
+
+    public function getUserActiveDevices($userId)
+    {
+        $escapedUserId = $this->getDb()->quote($userId);
+        $productType = $this->db->quote(ProductRecord::TYPE_PACKAGE);
+        $status = $this->db->quote(LicenseRecord::STATUS_ACTIVE);
+
+        $minOnlineTime = time() - self::ONLINE_PERIOD;
+        
+        return $this->getDb()->query("SELECT
+                    d.`id`,
+                    d.`name`,
+                    d.`os`,
+                    d.`os_version`,
+                    d.`app_version`,
+                    d.`model`,
+                    IF(d.`last_visit` > {$minOnlineTime}, 1, 0) online,
+                    d.`rooted`,
+                    p.`name` package_name
+                FROM `devices` d
+                LEFT JOIN `licenses` l ON 
+                    l.`device_id` = d.`id` AND
+                    l.`product_type` = {$productType} AND
+                    l.`status` = {$status}
+                LEFT JOIN `products` p ON p.`id` = l.`product_id`
+                WHERE
+                    d.`user_id` = {$escapedUserId} AND
+                    d.`deleted` = 0")->fetchAll(\PDO::FETCH_KEY_PAIR);
     }
 
 }
