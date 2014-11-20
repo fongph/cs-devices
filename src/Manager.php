@@ -263,6 +263,7 @@ class Manager
                     d.`os`,
                     d.`os_version`,
                     d.`app_version`,
+                    d.`network`,
                     d.`model`,
                     IF(d.`last_visit` > {$minOnlineTime}, 1, 0) online,
                     d.`rooted`,
