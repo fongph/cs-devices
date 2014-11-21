@@ -5,8 +5,8 @@ namespace CS\Devices;
 use PDO,
     CS\Models\Product\ProductRecord,
     CS\Models\License\LicenseRecord,
-    CS\Models\Device\Limitation\DeviceLimitationRecord,
-    CS\Models\Device\Limitation\DeviceLimitationNotFoundException;
+    CS\Models\Limitation,
+    CS\Models\Device\Limitation\DeviceLimitationRecord;
 
 /**
  * Description of Limitations
@@ -15,48 +15,9 @@ use PDO,
  */
 class Limitations
 {
-
-    const SMS = 'sms';
-    const CALL = 'call';
-    const GPS = 'gps';
-    const BLOCK_NUMBER = 'block_number';
-    const BLOCK_WORDS = 'block_words';
-    const BROWSER_HISTORY = 'browser_history';
-    const BROWSER_BOOKMARK = 'browser_bookmark';
-    const CONTACT = 'contact';
-    const CALENDAR = 'calendar';
-    const PHOTOS = 'photos';
-    const VIBER = 'viber';
-    const WHATSAPP = 'whatsapp';
-    const VIDEO = 'video';
-    const SKYPE = 'skype';
-    const FACEBOOK = 'facebook';
-    const VK = 'vk';
-    const EMAILS = 'emails';
-    const APPLICATIONS = 'applications';
-    const KEYLOGGER = 'keylogger';
-    const UNLIMITED_VALUE = 65535;
-
-    private $allowedLimitations = array(
-        self::SMS,
-        self::CALL,
-        self::GPS,
-        self::BLOCK_NUMBER,
-        self::BLOCK_WORDS,
-        self::BROWSER_HISTORY,
-        self::BROWSER_BOOKMARK,
-        self::CONTACT,
-        self::CALENDAR,
-        self::PHOTOS,
-        self::VIBER,
-        self::WHATSAPP,
-        self::VIDEO,
-        self::SKYPE,
-        self::FACEBOOK,
-        self::VK,
-        self::EMAILS,
-        self::APPLICATIONS,
-        self::KEYLOGGER
+    protected static $columns = array(
+        Limitation::SMS => 'sms',
+        Limitation::CALL => 'call'
     );
 
     /**
@@ -80,34 +41,37 @@ class Limitations
         return $this->db;
     }
 
-    public function isAllowed($devId, $limitationName)
+    public function isAllowed($devId, $option)
     {
-        if (!in_array($limitationName, $this->allowedLimitations)) {
-            throw new InvalidLimitationNameException("Bad limitation name!");
+        $devIdValue = $this->db->quote($devId);
+
+        if ($option == Limitation::SMS) {
+            return $this->db->query("SELECT `sms` FROM `devices_limitations` WHERE `device_id` = {$devIdValue} LIMIT 1")->fetchColumn() > 0;
         }
 
-        $devIdValue = $this->db->quote($devId);
-        return $this->db->query("SELECT `{$limitationName}` FROM `devices_limitations` WHERE `device_id` = {$devIdValue} LIMIT 1")->fetchColumn() > 0;
+        if ($option == Limitation::CALL) {
+            return $this->db->query("SELECT `call` FROM `devices_limitations` WHERE `device_id` = {$devIdValue} LIMIT 1")->fetchColumn() > 0;
+        }
+
+        $value = $this->db->query("SELECT `value` FROM `devices_limitations` WHERE `device_id` = {$devIdValue} LIMIT 1")->fetchColumn();
+
+        return Limitation::hasValueOption($value, $option);
     }
 
-    private function getLimitationValue($devId, $limitationName)
+    public function decrementLimitation($devId, $option)
     {
-        $devIdValue = $this->db->quote($devId);
-        return $this->db->query("SELECT `{$limitationName}` FROM `devices_limitations` WHERE `device_id` = {$devIdValue} LIMIT 1")->fetchColumn();
-    }
-
-    public function decrementLimitation($devId, $limitationName)
-    {
-        if ($limitationName != self::SMS || $limitationName != self::CALL) {
+        if ($option != Limitation::SMS || $option != Limitation::CALL) {
             throw new InvalidLimitationNameException("Bad limitation name or limitation not support decrementation!");
         }
+
+        $limitationName = self::$columns[$option];
 
         $devIdValue = $this->db->quote($devId);
         $maxValue = self::UNLIMITED_VALUE;
         return $this->db->exec("UPDATE 
                                     `devices_limitations`
                                 SET 
-                                    `{$limitationName}` = `{$limitationName}` - 1
+                                    `{$limitationName}` = `{$option}` - 1
                                 WHERE 
                                     `device_id` = {$devIdValue} AND
                                     `{$limitationName}` > 0 AND
@@ -119,27 +83,11 @@ class Limitations
     {
         $devIdValue = $this->db->quote($devId);
         $status = $this->db->quote(LicenseRecord::STATUS_ACTIVE);
-        
+
         return $this->db->query("SELECT
                                 l.`sms`,
                                 l.`call`,
-                                l.`gps`,
-                                l.`block_number`,
-                                l.`block_words`,
-                                l.`browser_history`,
-                                l.`browser_bookmark`,
-                                l.`contact`,
-                                l.`calendar`,
-                                l.`photos`,
-                                l.`viber`,
-                                l.`whatsapp`,
-                                l.`video`,
-                                l.`skype`,
-                                l.`facebook`,
-                                l.`vk`,
-                                l.`emails`,
-                                l.`applications`,
-                                l.`keylogger`
+                                l.`value`
                             FROM `licenses` lic
                             INNER JOIN `products` p ON lic.`product_id` = p.`id`
                             INNER JOIN `limitations` l ON p.`limitation_id` = l.`id`
@@ -158,12 +106,7 @@ class Limitations
         }
 
         $deviceLimitation = new DeviceLimitationRecord($this->db);
-
-        try {
-            $deviceLimitation->loadByDeviceId($devId);
-        } catch (DeviceLimitationNotFoundException $e) {
-            $deviceLimitation->setDeviceId($devId);
-        }
+        $deviceLimitation->loadByDeviceId($devId);
 
         if (count($mainPackages) == 0) {
             $this->clearLimitation($deviceLimitation)->save();
@@ -183,100 +126,26 @@ class Limitations
 
     private function mergeLimitations(DeviceLimitationRecord $deviceLimitation, $limitations, $resetCount = false)
     {
-        foreach ($limitations as $name => $value) {
-            switch ($name) {
-                case self::SMS:
-                    if ($resetCount) {
-                        $deviceLimitation->setSms(max($deviceLimitation->getSms(), $value));
-                    }
-                    break;
-                case self::CALL:
-                    if ($resetCount) {
-                        $deviceLimitation->setCall(max($deviceLimitation->getCall(), $value));
-                    }
-                    break;
-                case self::GPS:
-                    $deviceLimitation->setGps(max($deviceLimitation->getGps(), $value));
-                    break;
-                case self::BLOCK_NUMBER:
-                    $deviceLimitation->setBlockNumber(max($deviceLimitation->getBlockNumber(), $value));
-                    break;
-                case self::BLOCK_WORDS:
-                    $deviceLimitation->setBlockWords(max($deviceLimitation->getBlockWords(), $value));
-                    break;
-                case self::BROWSER_HISTORY:
-                    $deviceLimitation->setBrowserHistory(max($deviceLimitation->getBrowserHistory(), $value));
-                    break;
-                case self::BROWSER_BOOKMARK:
-                    $deviceLimitation->setBrowserBookmark(max($deviceLimitation->getBrowserBookmark(), $value));
-                    break;
-                case self::CONTACT:
-                    $deviceLimitation->setContact(max($deviceLimitation->getContact(), $value));
-                    break;
-                case self::CALENDAR:
-                    $deviceLimitation->setCalendar(max($deviceLimitation->getCalendar(), $value));
-                    break;
-                case self::PHOTOS:
-                    $deviceLimitation->setPhotos(max($deviceLimitation->getPhotos(), $value));
-                    break;
-                case self::VIBER:
-                    $deviceLimitation->setViber(max($deviceLimitation->getViber(), $value));
-                    break;
-                case self::WHATSAPP:
-                    $deviceLimitation->setWhatsapp(max($deviceLimitation->getWhatsapp(), $value));
-                    break;
-                case self::VIDEO:
-                    $deviceLimitation->setVideo(max($deviceLimitation->getVideo(), $value));
-                    break;
-                case self::SKYPE:
-                    $deviceLimitation->setSkype(max($deviceLimitation->getSkype(), $value));
-                    break;
-                case self::FACEBOOK:
-                    $deviceLimitation->setFacebook(max($deviceLimitation->getFacebook(), $value));
-                    break;
-                case self::VK:
-                    $deviceLimitation->setVk(max($deviceLimitation->getVk(), $value));
-                    break;
-                case self::EMAILS:
-                    $deviceLimitation->setEmails(max($deviceLimitation->getEmails(), $value));
-                    break;
-                case self::APPLICATIONS:
-                    $deviceLimitation->setApplications(max($deviceLimitation->getApplications(), $value));
-                    break;
-                case self::KEYLOGGER:
-                    $deviceLimitation->setVk(max($deviceLimitation->getVk(), $value));
-                    break;
-            }
-        }
+        $device = new Limitation(
+                $deviceLimitation->getSms(), $deviceLimitation->getCall(), $deviceLimitation->getValue()
+        );
 
-        return $deviceLimitation;
+        $package = new Limitation(
+                $limitations['sms'], $limitations['call'], $limitations['value']
+        );
+
+        $device->merge($package, $resetCount);
+
+        return $deviceLimitation->setCall($device->getCall())
+                        ->setSms($device->getSms())
+                        ->setValue($device->getValue());
     }
 
     private function clearLimitation(DeviceLimitationRecord $deviceLimitation)
     {
-        $limitations = array(
-            self::SMS => 0,
-            self::CALL => 0,
-            self::GPS => 0,
-            self::BLOCK_NUMBER => 0,
-            self::BLOCK_WORDS => 0,
-            self::BROWSER_HISTORY => 0,
-            self::BROWSER_BOOKMARK => 0,
-            self::CONTACT => 0,
-            self::CALENDAR => 0,
-            self::PHOTOS => 0,
-            self::VIBER => 0,
-            self::WHATSAPP => 0,
-            self::VIDEO => 0,
-            self::SKYPE => 0,
-            self::FACEBOOK => 0,
-            self::VK => 0,
-            self::EMAILS => 0,
-            self::APPLICATIONS => 0,
-            self::KEYLOGGER => 0
-        );
-
-        return $this->mergeLimitations($deviceLimitation, $limitations);
+        return $deviceLimitation->setSms(0)
+                        ->setCall(0)
+                        ->setValue(0);
     }
 
 }

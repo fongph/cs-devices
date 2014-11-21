@@ -132,6 +132,7 @@ class Manager
         return $deviceCode->createCode($userId);
     }
 
+    //TODO: create records at data database
     public function addDeviceWithCode($deviceUniqueId, $code)
     {
         $deviceCode = new DeviceCode($this->getRedis());
@@ -143,6 +144,11 @@ class Manager
         $deviceRecord = new DeviceRecord();
         $deviceRecord->setUniqueId($deviceUniqueId)
                 ->setUserId($userId)
+                ->setName('Device ' . rand(0, 999))
+                ->save();
+
+        $deviceLimitations = new \CS\Models\Device\Limitation\DeviceLimitationRecord($this->db);
+        $deviceLimitations->setDevice($deviceRecord)
                 ->save();
 
         $limitations = new Limitations($this->db);
@@ -151,16 +157,16 @@ class Manager
         return $deviceRecord->getId();
     }
 
-    public function isDeviceLimitationAllowed($devId, $limitationName)
+    public function isDeviceLimitationAllowed($devId, $option)
     {
         $limitations = new Limitations($this->db);
-        return $limitations->isAllowed($devId, $limitationName);
+        return $limitations->isAllowed($devId, $option);
     }
 
-    public function decrementLimitation($devId, $limitationName)
+    public function decrementLimitation($devId, $option)
     {
         $limitations = new Limitations($this->db);
-        $limitations->decrementLimitation($devId, $limitationName);
+        $limitations->decrementLimitation($devId, $option);
     }
 
     public function updateDeviceLimitations($devId, $resetCount = false)
