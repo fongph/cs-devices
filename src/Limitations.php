@@ -15,9 +15,68 @@ use PDO,
  */
 class Limitations
 {
-    protected static $columns = array(
-        Limitation::SMS => 'sms',
-        Limitation::CALL => 'call'
+    const SMS = 'sms';
+    const CALL = 'call';
+    const GPS = 'gps';
+    const BLOCK_NUMBER = 'block_number';
+    const BLOCK_WORDS = 'block_words';
+    const BROWSER_HISTORY = 'browser_history';
+    const BROWSER_BOOKMARK = 'browser_bookmark';
+    const CONTACT = 'contact';
+    const CALENDAR = 'calendar';
+    const PHOTOS = 'photos';
+    const VIBER = 'viber';
+    const WHATSAPP = 'whatsapp';
+    const VIDEO = 'video';
+    const SKYPE = 'skype';
+    const FACEBOOK = 'facebook';
+    const VK = 'vk';
+    const EMAILS = 'emails';
+    const APPLICATIONS = 'applications';
+    const KEYLOGGER = 'keylogger';
+    
+    private static $allowedLimitations = array(
+        self::SMS,
+        self::CALL,
+        self::GPS,
+        self::BLOCK_NUMBER,
+        self::BLOCK_WORDS,
+        self::BROWSER_HISTORY,
+        self::BROWSER_BOOKMARK,
+        self::CONTACT,
+        self::CALENDAR,
+        self::PHOTOS,
+        self::VIBER,
+        self::WHATSAPP,
+        self::VIDEO,
+        self::SKYPE,
+        self::FACEBOOK,
+        self::VK,
+        self::EMAILS,
+        self::APPLICATIONS,
+        self::KEYLOGGER
+    );
+    
+    private static $masks = array(
+        self::SMS => Limitation::SMS,
+        self::CALL => Limitation::CALL,
+        self::GPS => Limitation::GPS,
+        self::BLOCK_NUMBER => Limitation::BLOCK_NUMBER,
+        self::BLOCK_WORDS => Limitation::BLOCK_WORDS,
+        self::BROWSER_HISTORY => Limitation::BROWSER_HISTORY,
+        self::BROWSER_BOOKMARK => Limitation::BROWSER_BOOKMARK,
+        self::CONTACT => Limitation::CONTACT,
+        self::CALENDAR => Limitation::CALENDAR,
+        self::PHOTOS => Limitation::PHOTOS,
+        self::VIBER => Limitation::VIBER,
+        self::WHATSAPP => Limitation::WHATSAPP,
+        self::VIDEO => Limitation::VIDEO,
+        self::SKYPE => Limitation::SKYPE,
+        self::FACEBOOK => Limitation::FACEBOOK,
+        self::VK => Limitation::VK,
+        self::EMAILS => Limitation::EMAILS,
+        self::APPLICATIONS => Limitation::APPLICATIONS,
+        self::KEYLOGGER => Limitation::KEYLOGGER
     );
 
     /**
@@ -41,37 +100,34 @@ class Limitations
         return $this->db;
     }
 
-    public function isAllowed($devId, $option)
+    public function isAllowed($devId, $limitationName)
     {
+        if (!in_array($limitationName, self::$allowedLimitations)) {
+            throw new InvalidLimitationNameException("Bad limitation name!");
+        }
+        
         $devIdValue = $this->db->quote($devId);
-
-        if ($option == Limitation::SMS) {
-            return $this->db->query("SELECT `sms` FROM `devices_limitations` WHERE `device_id` = {$devIdValue} LIMIT 1")->fetchColumn() > 0;
+        if ($limitationName == self::SMS || $limitationName == self::CALL) {
+            return $this->db->query("SELECT `{$limitationName}` FROM `devices_limitations` WHERE `device_id` = {$devIdValue} LIMIT 1")->fetchColumn() > 0;
         }
-
-        if ($option == Limitation::CALL) {
-            return $this->db->query("SELECT `call` FROM `devices_limitations` WHERE `device_id` = {$devIdValue} LIMIT 1")->fetchColumn() > 0;
-        }
-
+        
         $value = $this->db->query("SELECT `value` FROM `devices_limitations` WHERE `device_id` = {$devIdValue} LIMIT 1")->fetchColumn();
 
-        return Limitation::hasValueOption($value, $option);
+        return Limitation::hasValueOption($value, self::$masks[$limitationName]);
     }
 
-    public function decrementLimitation($devId, $option)
+    public function decrementLimitation($devId, $limitationName)
     {
-        if ($option != Limitation::SMS || $option != Limitation::CALL) {
+        if ($limitationName != self::SMS || $limitationName != self::CALL) {
             throw new InvalidLimitationNameException("Bad limitation name or limitation not support decrementation!");
         }
-
-        $limitationName = self::$columns[$option];
 
         $devIdValue = $this->db->quote($devId);
         $maxValue = self::UNLIMITED_VALUE;
         return $this->db->exec("UPDATE 
                                     `devices_limitations`
                                 SET 
-                                    `{$limitationName}` = `{$option}` - 1
+                                    `{$limitationName}` = `{$limitationName}` - 1
                                 WHERE 
                                     `device_id` = {$devIdValue} AND
                                     `{$limitationName}` > 0 AND

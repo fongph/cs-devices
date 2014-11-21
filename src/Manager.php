@@ -156,7 +156,7 @@ class Manager
 
         return $deviceRecord->getId();
     }
-
+    
     public function isDeviceLimitationAllowed($devId, $option)
     {
         $limitations = new Limitations($this->db);
