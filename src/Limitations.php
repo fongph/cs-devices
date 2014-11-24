@@ -19,10 +19,10 @@ class Limitations
     const SMS = 'sms';
     const CALL = 'call';
     const GPS = 'gps';
-    const BLOCK_NUMBER = 'block_number';
-    const BLOCK_WORDS = 'block_words';
-    const BROWSER_HISTORY = 'browser_history';
-    const BROWSER_BOOKMARK = 'browser_bookmark';
+    const BLOCK_NUMBER = 'blockNumber';
+    const BLOCK_WORDS = 'blockWords';
+    const BROWSER_HISTORY = 'browserHistory';
+    const BROWSER_BOOKMARK = 'browserBookmark';
     const CONTACT = 'contact';
     const CALENDAR = 'calendar';
     const PHOTOS = 'photos';

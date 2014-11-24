@@ -63,7 +63,7 @@ class DeviceOptions
         return false;
     }
 
-    public static function isBookmarksActive($os)
+    public static function isBrowserBookmarksActive($os)
     {
         if ($os == 'blackberry') {
             return false;
