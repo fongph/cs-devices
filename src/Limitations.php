@@ -158,9 +158,9 @@ class Limitations
         $devIdValue = $this->db->quote($devId);
 
         $result = $this->db->query("SELECT
-                                l.`sms`,
-                                l.`call`,
-                                l.`value`
+                                `sms`,
+                                `call`,
+                                `value`
                             FROM 
                                 `devices_limitations`
                             WHERE 
