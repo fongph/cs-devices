@@ -222,6 +222,11 @@ class Limitations
                         ->setValue($device->getValue());
     }
 
+    public static function getOptionValue($name)
+    {
+        return self::$masks[$name];
+    }
+    
     private function clearLimitation(DeviceLimitationRecord $deviceLimitation)
     {
         return $deviceLimitation->setSms(0)
