@@ -132,8 +132,9 @@ class Manager
         return $deviceCode->createCode($userId);
     }
 
-    //TODO: create records at data database
-    public function addDeviceWithCode($deviceUniqueId, $code)
+    //@TODO: create records at data database
+    //@TODO: send emails
+    public function addDeviceWithCode($deviceUniqueId, $code, $name)
     {
         $deviceCode = new DeviceCode($this->getRedis());
 
@@ -144,7 +145,7 @@ class Manager
         $deviceRecord = new DeviceRecord();
         $deviceRecord->setUniqueId($deviceUniqueId)
                 ->setUserId($userId)
-                ->setName('Device ' . rand(0, 999))
+                ->setName($name)
                 ->save();
 
         $deviceLimitations = new \CS\Models\Device\Limitation\DeviceLimitationRecord($this->db);
