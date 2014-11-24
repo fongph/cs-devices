@@ -15,6 +15,7 @@ use PDO,
  */
 class Limitations
 {
+
     const SMS = 'sms';
     const CALL = 'call';
     const GPS = 'gps';
@@ -34,7 +35,7 @@ class Limitations
     const EMAILS = 'emails';
     const APPLICATIONS = 'applications';
     const KEYLOGGER = 'keylogger';
-    
+
     private static $allowedLimitations = array(
         self::SMS,
         self::CALL,
@@ -56,7 +57,6 @@ class Limitations
         self::APPLICATIONS,
         self::KEYLOGGER
     );
-    
     private static $masks = array(
         self::SMS => Limitation::SMS,
         self::CALL => Limitation::CALL,
@@ -105,12 +105,12 @@ class Limitations
         if (!in_array($limitationName, self::$allowedLimitations)) {
             throw new InvalidLimitationNameException("Bad limitation name!");
         }
-        
+
         $devIdValue = $this->db->quote($devId);
         if ($limitationName == self::SMS || $limitationName == self::CALL) {
             return $this->db->query("SELECT `{$limitationName}` FROM `devices_limitations` WHERE `device_id` = {$devIdValue} LIMIT 1")->fetchColumn() > 0;
         }
-        
+
         $value = $this->db->query("SELECT `value` FROM `devices_limitations` WHERE `device_id` = {$devIdValue} LIMIT 1")->fetchColumn();
 
         return Limitation::hasValueOption($value, self::$masks[$limitationName]);
@@ -151,6 +151,31 @@ class Limitations
                                 lic.`device_id` = {$devIdValue} AND
                                 lic.`status` = {$status} AND
                                 lic.`product_type` = '{$productType}'")->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function getDeviceLimitation($devId)
+    {
+        $devIdValue = $this->db->quote($devId);
+
+        $result = $this->db->query("SELECT
+                                l.`sms`,
+                                l.`call`,
+                                l.`value`
+                            FROM 
+                                `devices_limitations`
+                            WHERE 
+                                `device_id` = {$devIdValue} 
+                            LIMIT 1")->fetch();
+
+        $limitation = new Limitation();
+
+        if ($result === false) {
+            return $limitation;
+        }
+
+        return $limitation->setCall($result['call'])
+                        ->setSms($result['sms'])
+                        ->setValue($result['value']);
     }
 
     public function updateDeviceLimitations($devId, $resetCount = false)
