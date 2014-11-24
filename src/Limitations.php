@@ -35,6 +35,7 @@ class Limitations
     const EMAILS = 'emails';
     const APPLICATIONS = 'applications';
     const KEYLOGGER = 'keylogger';
+    const SMS_COMMANDS = 'smsCommands';
 
     private static $allowedLimitations = array(
         self::SMS,
@@ -55,7 +56,8 @@ class Limitations
         self::VK,
         self::EMAILS,
         self::APPLICATIONS,
-        self::KEYLOGGER
+        self::KEYLOGGER,
+        self::SMS_COMMANDS
     );
     private static $masks = array(
         self::SMS => Limitation::SMS,
@@ -76,7 +78,8 @@ class Limitations
         self::VK => Limitation::VK,
         self::EMAILS => Limitation::EMAILS,
         self::APPLICATIONS => Limitation::APPLICATIONS,
-        self::KEYLOGGER => Limitation::KEYLOGGER
+        self::KEYLOGGER => Limitation::KEYLOGGER,
+        self::SMS_COMMANDS => Limitation::SMS_COMMANDS
     );
 
     /**
@@ -226,7 +229,7 @@ class Limitations
     {
         return self::$masks[$name];
     }
-    
+
     private function clearLimitation(DeviceLimitationRecord $deviceLimitation)
     {
         return $deviceLimitation->setSms(0)
