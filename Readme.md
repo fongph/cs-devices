@@ -12,7 +12,7 @@
 $manager = new CS\Devices\Manager($db);
 
 // проверка на существоание устройства по сгенерированному идентификатору
-$this->deviceExist($devUniqueId);
+$manager->deviceExist($devUniqueId);
 
 // получаем id устройства по его сгенерированному идентификатору,
 // если такого устройства не удалось найти, будет возвращено false
@@ -52,12 +52,14 @@ try {
 
 $manager = new CS\Devices\Manager($db);
 
-// проверяем лимиты устройства на некоторою опцию (например добавление СМС)
-$allowed = $manager->isDeviceLimitationAllowed($devId, $limitationName);
+// для проверки или установки лимитов нужно использовать константы класса CS\Models\Limitation
+
+// проверяем лимиты устройства на некоторою опцию (например загрузку видео)
+$allowed = $manager->isDeviceLimitationAllowed($devId, CS\Models\Limitation::VIDEO);
 
 // уменьшаем количественный лимит (смс, звонки)
 // если он безлимитный, то ничего не измениться
-$manager->decrementLimitation($devId, $limitationName);
+$manager->decrementLimitation($devId, CS\Models\Limitation::CALL);
 
 // обновлем лимиты устройства
 // bool $resetCount - заставляет обновлять количественные лимиты 

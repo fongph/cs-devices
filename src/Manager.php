@@ -26,6 +26,11 @@ class Manager
      */
     protected $db;
 
+    /**
+     * (20 min)
+     */
+    const ONLINE_PERIOD = 1200;
+
     public function __construct(\PDO $db)
     {
         $this->db = $db;
@@ -127,6 +132,8 @@ class Manager
         return $deviceCode->createCode($userId);
     }
 
+    //@TODO: create records at data database
+    //@TODO: send emails
     public function addDeviceWithCode($deviceUniqueId, $code, $name)
     {
         $deviceCode = new DeviceCode($this->getRedis());
@@ -139,6 +146,10 @@ class Manager
         $deviceRecord->setUniqueId($deviceUniqueId)
                 ->setUserId($userId)
                 ->setName($name)
+                ->save();
+
+        $deviceLimitations = new \CS\Models\Device\Limitation\DeviceLimitationRecord($this->db);
+        $deviceLimitations->setDevice($deviceRecord)
                 ->save();
 
         $limitations = new Limitations($this->db);
@@ -167,17 +178,17 @@ class Manager
         
         return $deviceRecord->getId();
     }
-
-    public function isDeviceLimitationAllowed($devId, $limitationName)
+    
+    public function isDeviceLimitationAllowed($devId, $option)
     {
         $limitations = new Limitations($this->db);
-        return $limitations->isAllowed($devId, $limitationName);
+        return $limitations->isAllowed($devId, $option);
     }
 
-    public function decrementLimitation($devId, $limitationName)
+    public function decrementLimitation($devId, $option)
     {
         $limitations = new Limitations($this->db);
-        $limitations->decrementLimitation($devId, $limitationName);
+        $limitations->decrementLimitation($devId, $option);
     }
 
     public function updateDeviceLimitations($devId, $resetCount = false)
@@ -264,6 +275,50 @@ class Manager
                                                     `status` = {$status} AND
                                                     `product_type` = {$productType} 
                                                 LIMIT 1) = 0")->fetchAll(\PDO::FETCH_KEY_PAIR);
+    }
+
+    public function getUserActiveDevices($userId)
+    {
+        $escapedUserId = $this->getDb()->quote($userId);
+        $productType = $this->db->quote(ProductRecord::TYPE_PACKAGE);
+        $status = $this->db->quote(LicenseRecord::STATUS_ACTIVE);
+
+        $minOnlineTime = time() - self::ONLINE_PERIOD;
+
+        return $this->getDb()->query("SELECT
+                    d.`id`,
+                    d.`name`,
+                    d.`os`,
+                    d.`os_version`,
+                    d.`app_version`,
+                    d.`network`,
+                    d.`model`,
+                    IF(d.`last_visit` > {$minOnlineTime}, 1, 0) online,
+                    d.`rooted`,
+                    p.`name` package_name
+                FROM `devices` d
+                LEFT JOIN `licenses` l ON 
+                    l.`device_id` = d.`id` AND
+                    l.`product_type` = {$productType} AND
+                    l.`status` = {$status}
+                LEFT JOIN `products` p ON p.`id` = l.`product_id`
+                WHERE
+                    d.`user_id` = {$escapedUserId} AND
+                    d.`deleted` = 0")->fetchAll(\PDO::FETCH_ASSOC | \PDO::FETCH_UNIQUE);
+    }
+
+    public function deleteDevice($deviceId)
+    {
+        $this->getDevice($deviceId)
+                ->setDeleted()
+                ->save();
+
+        $status = $this->db->quote(LicenseRecord::STATUS_INACTIVE);
+        $escapedDeviceId = $this->getDb()->quote($deviceId);
+
+        $this->getDb()->exec("UPDATE `licenses` SET `status` = {$status}, `device_id` = NULL WHERE `device_id` = {$escapedDeviceId}");
+
+        $this->updateDeviceLimitations($deviceId, true);
     }
 
 }
