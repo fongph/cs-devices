@@ -14,7 +14,7 @@ class DeviceOptions
     {
         if ($os === 'android') {
             return true;
-        } else if ($os === 'ios' && compareOSVersion('ios', '7.1', $osVersion, '<')) {
+        } else if ($os === 'ios' && self::compareOSVersion('ios', '7.1', $osVersion, '<')) {
             return true;
         }
 
@@ -24,25 +24,12 @@ class DeviceOptions
     public static function isBlockSMSActive($os, $osVersion)
     {
         if ($os == 'android') {
-            return compareOSVersion('android', '4.4', $osVersion, '<');
+            return self::compareOSVersion('android', '4.4', $osVersion, '<');
         } else if ($os == 'ios') {
             return true;
         }
 
         return false;
-    }
-
-    public static function compareOSVersion($os, $compVersion, $osVersion, $operator)
-    {
-        if ($os == 'android') {
-            $parts = explode('_', $osVersion);
-            if (count($parts) != 2) {
-                return false;
-            }
-            $osVersion = $parts[1];
-        }
-
-        return version_compare($osVersion, $compVersion, $operator);
     }
 
     public static function isRebootDeviceActive($os)
@@ -194,10 +181,23 @@ class DeviceOptions
         if ($os == 'blackberry') {
             return false;
         } else if ($os == 'android') {
-            return compareOSVersion('android', '4.4', $osVersion, '<');
+            return self::compareOSVersion('android', '4.4', $osVersion, '<');
         }
 
         return true;
+    }
+
+    public static function compareOSVersion($os, $compVersion, $osVersion, $operator)
+    {
+        if ($os == 'android') {
+            $parts = explode('_', $osVersion);
+            if (count($parts) != 2) {
+                return false;
+            }
+            $osVersion = $parts[1];
+        }
+
+        return version_compare($osVersion, $compVersion, $operator);
     }
 
 }
