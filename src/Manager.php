@@ -154,7 +154,28 @@ class Manager
 
         $limitations = new Limitations($this->db);
         $limitations->updateDeviceLimitations($deviceRecord->getId(), true);
+        $deviceCode->removeCode($code);
+        /*$message = '<!DOCTYPE html>
+        <html>
+        <head>
+        <title>Pumpic: New Device Added</title>
+        </head>
+        <body>
+        <div class="wrap" style="margin: 20px auto;width: 700px;overflow: hidden;font-family: Arial, sans-serif;font-size: 16px;color:#333;">
+        <a class="logo" href="http://cp.pumpic.com" style="float: right;margin: 10px 20px;"><img src="http://www.pumpic.com/wp-content/themes/pumpicapp/images/logo.png"></a>
+        <div class="block" style="width: 636px;float: left;padding: 0 30px;border-radius: 20px;border: 2px solid #0090d3;">
+        <h1 style="text-align:center;font-size:35px;  font-weight: bold;">New <span style="color:#0090d3;">Device</span> Added</h1>
+        <p style="line-height: 20px;">Hello again!</p>
+        <p style="line-height: 20px;">Your device ' . $name . ' has been added to your account on pumpic.com. Yay!</p>
+        <br>
+        <p style="line-height:20px;">Pumpic Team<br/>support@pumpic.com<br/>http://pumpic.com</p>
+        </div>
+        </div>
+        </body>
+        </html>';
 
+        $this->sendMail($email, "Pumpic: New Device Added", $message);*/
+        
         return $deviceRecord->getId();
     }
     
