@@ -19,7 +19,7 @@ $manager->deviceExist($devUniqueId);
 $deviceId = $this->getDeviceId($devUniqueId);
 ```
 
-Работа с кодами добавления устройства
+Генерируем и возвращаем код добавления устройства для пользователя
 ```
 #!php
 <?php
@@ -27,13 +27,24 @@ $deviceId = $this->getDeviceId($devUniqueId);
 $manager = new CS\Devices\Manager($db);
 $manager->setRedisConfig($config);
 
-// генерируем и возвращаем код добавления устройства для пользователя, 
 // если код уже был сгенерирован и он присутствует в базе - возвращаем его
 try {
     $code = $manager->getUserDeviceAddCode($userId);
 } catch (CS\Devices\Manager\DeviceCodeGenerationException $e) {
     // ошибка генерации кода, вероятно все возможные коды сейчас заняты
 }
+```
+
+Добавление устройства используя код
+```
+#!php
+<?php
+
+$manager = new CS\Devices\Manager($db);
+$manager->setRedisConfig($config);
+$manager->setDeviceDbConfigGenerator(function($devId) {
+    return \CS\Settings\getDeviceDatabaseConfig($devId);
+});
 
 // добавление устройства используя код
 // возвращаем числовой идентификатор устройства
@@ -42,6 +53,8 @@ try {
     $deviceId = $manager->addDeviceWithCode($deviceUniqueId, $code);
 } catch (CS\Devices\Manager\DeviceCodeNotFoundException $e) {
     // код не найден или уже устарел
+} catch (\Exception $e) {
+   // ловим любые другие ошибки
 }
 ```
 
