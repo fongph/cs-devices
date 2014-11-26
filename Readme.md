@@ -43,7 +43,7 @@ try {
 $manager = new CS\Devices\Manager($db);
 $manager->setRedisConfig($config);
 $manager->setDeviceDbConfigGenerator(function($devId) {
-    return \CS\Settings\getDeviceDatabaseConfig($devId);
+    return \CS\Settings\GlobalSettings::getDeviceDatabaseConfig($devId);
 });
 
 // добавление устройства используя код
