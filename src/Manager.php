@@ -27,6 +27,21 @@ class Manager
     protected $db;
 
     /**
+     *
+     * @var callable
+     */
+    protected $deviceDbConfigGenerator;
+
+    /**
+     *
+     * @var array
+     */
+    protected $dbOptions = array(
+        PDO::MYSQL_ATTR_INIT_COMMAND => 'set names utf8;',
+        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
+    );
+
+    /**
      * (20 min)
      */
     const ONLINE_PERIOD = 1200;
@@ -48,6 +63,16 @@ class Manager
     public function setRedisConfig($array)
     {
         $this->redisConfig = $array;
+    }
+
+    public function setDeviceDbConfigGenerator(callable $generator)
+    {
+        $this->deviceDbConfigGenerator = $generator;
+    }
+
+    public function setDbOptions($options)
+    {
+        $this->dbOptions = $options;
     }
 
     /**
@@ -132,7 +157,17 @@ class Manager
         return $deviceCode->createCode($userId);
     }
 
-    //@TODO: create records at data database
+    public function getDeviceDbConnection($devId)
+    {
+        if ($this->deviceDbConfigGenerator == null) {
+            throw new DeviceDbConfigGeneratorNotExistException("Device db config generator not found!");
+        }
+
+        $dbConfig = $this->deviceDbConfigGenerator($devId);
+
+        return new \PDO("mysql:host={$dbConfig['host']};dbname={$dbConfig['dbname']}", $dbConfig['username'], $dbConfig['password'], $this->dbOptions);
+    }
+
     //@TODO: send emails
     public function addDeviceWithCode($deviceUniqueId, $code, $name)
     {
@@ -142,11 +177,17 @@ class Manager
             throw new DeviceCodeNotFoundException("Code not found!");
         }
 
-        $deviceRecord = new DeviceRecord();
+        $this->db->beginTransaction();
+
+        $deviceRecord = new DeviceRecord($this->db);
         $deviceRecord->setUniqueId($deviceUniqueId)
                 ->setUserId($userId)
                 ->setName($name)
                 ->save();
+
+        $deviceDb = $this->getDeviceDbConnection($deviceRecord->getId());
+        $deviceDb->beginTransaction();
+        $this->createDeviceIitialSettings($deviceDb, $deviceRecord->getId());
 
         $deviceLimitations = new \CS\Models\Device\Limitation\DeviceLimitationRecord($this->db);
         $deviceLimitations->setDevice($deviceRecord)
@@ -155,30 +196,41 @@ class Manager
         $limitations = new Limitations($this->db);
         $limitations->updateDeviceLimitations($deviceRecord->getId(), true);
         $deviceCode->removeCode($code);
-        /*$message = '<!DOCTYPE html>
-        <html>
-        <head>
-        <title>Pumpic: New Device Added</title>
-        </head>
-        <body>
-        <div class="wrap" style="margin: 20px auto;width: 700px;overflow: hidden;font-family: Arial, sans-serif;font-size: 16px;color:#333;">
-        <a class="logo" href="http://cp.pumpic.com" style="float: right;margin: 10px 20px;"><img src="http://www.pumpic.com/wp-content/themes/pumpicapp/images/logo.png"></a>
-        <div class="block" style="width: 636px;float: left;padding: 0 30px;border-radius: 20px;border: 2px solid #0090d3;">
-        <h1 style="text-align:center;font-size:35px;  font-weight: bold;">New <span style="color:#0090d3;">Device</span> Added</h1>
-        <p style="line-height: 20px;">Hello again!</p>
-        <p style="line-height: 20px;">Your device ' . $name . ' has been added to your account on pumpic.com. Yay!</p>
-        <br>
-        <p style="line-height:20px;">Pumpic Team<br/>support@pumpic.com<br/>http://pumpic.com</p>
-        </div>
-        </div>
-        </body>
-        </html>';
 
-        $this->sendMail($email, "Pumpic: New Device Added", $message);*/
-        
+        /* $message = '<!DOCTYPE html>
+          <html>
+          <head>
+          <title>Pumpic: New Device Added</title>
+          </head>
+          <body>
+          <div class="wrap" style="margin: 20px auto;width: 700px;overflow: hidden;font-family: Arial, sans-serif;font-size: 16px;color:#333;">
+          <a class="logo" href="http://cp.pumpic.com" style="float: right;margin: 10px 20px;"><img src="http://www.pumpic.com/wp-content/themes/pumpicapp/images/logo.png"></a>
+          <div class="block" style="width: 636px;float: left;padding: 0 30px;border-radius: 20px;border: 2px solid #0090d3;">
+          <h1 style="text-align:center;font-size:35px;  font-weight: bold;">New <span style="color:#0090d3;">Device</span> Added</h1>
+          <p style="line-height: 20px;">Hello again!</p>
+          <p style="line-height: 20px;">Your device ' . $name . ' has been added to your account on pumpic.com. Yay!</p>
+          <br>
+          <p style="line-height:20px;">Pumpic Team<br/>support@pumpic.com<br/>http://pumpic.com</p>
+          </div>
+          </div>
+          </body>
+          </html>';
+
+          $this->sendMail($email, "Pumpic: New Device Added", $message); */
+
+        $deviceDb->commit();
+        $this->db->commit();
+
         return $deviceRecord->getId();
     }
-    
+
+    private function createDeviceIitialSettings(\PDO $db, $devId)
+    {
+        $escapedDevId = $db->quote($devId);
+        $db->exec("INSERT INTO `dev_settings` SET `dev_id` = {$escapedDevId}");
+        $db->exec("INSERT INTO `dev_info` SET `dev_id` = {$escapedDevId}");
+    }
+
     public function isDeviceLimitationAllowed($devId, $option)
     {
         $limitations = new Limitations($this->db);
