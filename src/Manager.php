@@ -150,11 +150,11 @@ class Manager
         return $this->getDb()->query("SELECT `id` FROM `devices` WHERE `unique_id` = {$uniqueId} LIMIT 1")->fetchColumn();
     }
 
-    public function getUserDeviceAddCode($userId)
+    public function getUserDeviceAddCode($userId, $licenseId = null)
     {
         $deviceCode = new DeviceCode($this->getRedis());
 
-        return $deviceCode->createCode($userId);
+        return $deviceCode->createCode($userId, $licenseId);
     }
 
     public function getDeviceDbConnection($devId)
