@@ -63,26 +63,26 @@ class DeviceCode
             return $code;
         }
 
-        for ($i = 0; $i < self::GENERATION_LIMIT; $i++) {
+        for ($i = 1; $i <= self::GENERATION_LIMIT; $i++) {
             $code = $this->getNewCode();
-
             if (!$this->existCode($code)) {
-                $this->redis->set(self::CODE_PREFIX . $code, $userId);
-                $this->redis->expire(self::CODE_PREFIX . $code, self::LIFETIME);
-
-                $this->redis->set(self::USER_PREFIX . $userId, $code);
-                $this->redis->expire(self::USER_PREFIX . $userId, self::LIFETIME);
-
-                if ($licenseId !== null) {
-                    $this->redis->set(self::CODE_LICENSE_PREFIX . $code, $licenseId);
-                    $this->redis->expire(self::CODE_LICENSE_PREFIX . $code, self::LIFETIME);
-                }
-
-                return $code;
+                break;
+            } else if ($i == self::GENERATION_LIMIT) {
+                throw new DeviceCodeGenerationException("Device code generation limit reached!");
             }
         }
 
-        throw new DeviceCodeGenerationException("Device code generation limit reached!");
+        $this->redis->set(self::CODE_PREFIX . $code, $userId);
+        $this->redis->expire(self::CODE_PREFIX . $code, self::LIFETIME);
+
+        $this->redis->set(self::USER_PREFIX . $userId, $code);
+        $this->redis->expire(self::USER_PREFIX . $userId, self::LIFETIME);
+
+        if ($licenseId !== null) {
+            $this->redis->set(self::CODE_LICENSE_PREFIX . $code, $licenseId);
+            $this->redis->expire(self::CODE_LICENSE_PREFIX . $code, self::LIFETIME);
+        }
+        return $code;
     }
 
     private function getNewCode()
