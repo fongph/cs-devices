@@ -168,6 +168,12 @@ class Manager
         return new \PDO("mysql:host={$dbConfig['host']};dbname={$dbConfig['dbname']}", $dbConfig['username'], $dbConfig['password'], $this->dbOptions);
     }
 
+    public function getUserAddCodeInfo($userId, $code) {
+        $deviceCode = new DeviceCode($this->db);
+        
+        return $deviceCode->getUserCodeInfo($userId, $code);
+    }
+    
     //@TODO: send emails
     public function addDeviceWithCode($deviceUniqueId, $code, $name)
     {
