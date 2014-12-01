@@ -97,7 +97,7 @@ class DeviceCode
         return $this->db->query("SELECT
                                         `license_id`,
                                         IF(`assigned_device_id` > 0, 1, 0) as `assigned`,
-                                        IF(`time` < {$timeFrom}, 1, 0) as `expired`,
+                                        IF(`time` < {$timeFrom}, 1, 0) as `expired`
                                     FROM `codes` 
                                     WHERE
                                         `user_id` = {$user} AND
