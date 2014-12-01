@@ -156,6 +156,17 @@ class Limitations
                                 lic.`product_type` = '{$productType}'")->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    public function setDeviceLimitation($devId, Limitation $limitation)
+    {
+        $deviceLimitation = new DeviceLimitationRecord($this->db);
+        $deviceLimitation->loadByDeviceId($devId);
+        
+        $deviceLimitation->setCall($limitation->getCall())
+                ->setSms($limitation->getSms())
+                ->setValue($limitation->getValue())
+                ->save();
+    }
+
     public function getDeviceLimitation($devId)
     {
         $devIdValue = $this->db->quote($devId);
