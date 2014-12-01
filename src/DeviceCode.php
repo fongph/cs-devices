@@ -28,21 +28,29 @@ class DeviceCode
     {
         $timeFrom = time() - self::ACTIVETIME;
         $user = $this->db->quote($userId);
-        
+
         if ($licenseId == null) {
-            return $this->db->query("SELECT `value` FROM `codes` WHERE `user_id` = {$user} AND `license_id` IS NULL AND `time` > {$timeFrom} LIMIT 1")->fetchColumn();
+            return $this->db->query("SELECT `value` FROM `codes` WHERE 
+                                            `user_id` = {$user} AND
+                                            `license_id` IS NULL AND 
+                                            `time` > {$timeFrom} 
+                                        LIMIT 1")->fetchColumn();
         }
-        
+
         $license = $this->db->quote($licenseId);
 
-        return $this->db->query("SELECT `value` FROM `codes` WHERE `user_id` = {$user} AND `license_id` = {$license} AND `time` > {$timeFrom} LIMIT 1")->fetchColumn();
+        return $this->db->query("SELECT `value` FROM `codes` WHERE
+                                        `user_id` = {$user} AND
+                                        `license_id` = {$license} AND
+                                        `time` > {$timeFrom}
+                                    LIMIT 1")->fetchColumn();
     }
 
     private function getAllActiveCodes()
     {
         $timeFrom = time() - self::ACTIVETIME;
 
-        return $this->db->query("SELECT * FROM `codes` WHERE `time` > {$timeFrom}")->fetchALL(\PDO::FETCH_COLUMN);
+        return $this->db->query("SELECT `value` FROM `codes` WHERE `time` > {$timeFrom}")->fetchALL(\PDO::FETCH_COLUMN);
     }
 
     private function generateUniqueCode()
@@ -55,12 +63,12 @@ class DeviceCode
                 return $code;
             }
         }
-        
+
         throw new DeviceCodeGenerationException("Device code generation limit reached!");
     }
 
     public function createCode($userId, $licenseId = null)
-    {   
+    {
         if (($code = $this->getUserCode($userId, $licenseId)) !== false) {
             return $code;
         }
@@ -84,8 +92,17 @@ class DeviceCode
     {
         $user = $this->db->quote($userId);
         $code = $this->db->quote($codeValue);
+        $timeFrom = time() - self::ACTIVETIME;
 
-        return $this->db->query("SELECT `value` FROM `codes` WHERE `user_id` = {$user} AND `value` = {$code} LIMIT 1")->fetch(\PDO::FETCH_ASSOC);
+        return $this->db->query("SELECT
+                                        `license_id`,
+                                        IF(`assigned_device_id` > 0, 1, 0) as `assigned`,
+                                        IF(`time` < {$timeFrom}, 1, 0) as `expired`,
+                                    FROM `codes` 
+                                    WHERE
+                                        `user_id` = {$user} AND
+                                        `value` = {$code}
+                                    LIMIT 1")->fetch(\PDO::FETCH_ASSOC);
     }
 
     public function getActiveCodeInfo($codeValue)
