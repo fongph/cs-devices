@@ -12,25 +12,16 @@ class DeviceCode
 
     /**
      *
-     * @var \Predis\Client
-     */
-    private $redis;
-
-    /**
-     *
      * @var \PDO
      */
     private $db;
 
-    const CODE_PREFIX = 'c';
-    const USER_PREFIX = 'u';
-    const CODE_LICENSE_PREFIX = 'l';
     const GENERATION_LIMIT = 100;
     const ACTIVETIME = 900; // 15 min
 
-    public function __construct($redis)
+    public function __construct(\PDO $db)
     {
-        $this->redis = $redis;
+        $this->db = $db;
     }
 
     public function getUserCode($userId, $licenseId = null)
