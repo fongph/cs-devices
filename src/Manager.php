@@ -152,7 +152,7 @@ class Manager
 
     public function getUserDeviceAddCode($userId, $licenseId = null)
     {
-        $deviceCode = new DeviceCode($this->getRedis());
+        $deviceCode = new DeviceCode($this->db);
 
         return $deviceCode->createCode($userId, $licenseId);
     }
@@ -171,9 +171,9 @@ class Manager
     //@TODO: send emails
     public function addDeviceWithCode($deviceUniqueId, $code, $name)
     {
-        $deviceCode = new DeviceCode($this->getRedis());
+        $deviceCode = new DeviceCode($this->db);
 
-        if (($userId = $deviceCode->getCodeUser($code)) === null) {
+        if (($info = $deviceCode->getActiveCodeInfo($code)) === null) {
             throw new DeviceCodeNotFoundException("Code not found!");
         }
 
@@ -181,9 +181,22 @@ class Manager
 
         $deviceRecord = new DeviceRecord($this->db);
         $deviceRecord->setUniqueId($deviceUniqueId)
-                ->setUserId($userId)
+                ->setUserId($info['user_id'])
                 ->setName($name)
                 ->save();
+
+        if ($info['license_id'] !== null) {
+            $licenseRecord = new LicenseRecord($this->db);
+            $licenseRecord->load($info['license_id']);
+
+            if ($licenseRecord->getDeviceId() === null &&
+                    $licenseRecord->getStatus() === LicenseRecord::STATUS_AVAILABLE) {
+                
+                $licenseRecord->setDeviceId($deviceRecord->getId())
+                    ->setStatus(LicenseRecord::STATUS_ACTIVE)
+                    ->save();
+            }
+        }
 
         $deviceDb = $this->getDeviceDbConnection($deviceRecord->getId());
         $deviceDb->beginTransaction();
@@ -195,7 +208,6 @@ class Manager
 
         $limitations = new Limitations($this->db);
         $limitations->updateDeviceLimitations($deviceRecord->getId(), true);
-        $deviceCode->removeCode($code);
 
         /* $message = '<!DOCTYPE html>
           <html>
