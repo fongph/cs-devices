@@ -105,6 +105,15 @@ class DeviceCode
                                     LIMIT 1")->fetch(\PDO::FETCH_ASSOC);
     }
 
+    public function setCodeDevice($codeValue, $userId, $deviceId)
+    {
+        $user = $this->db->quote($userId);
+        $code = $this->db->quote($codeValue);
+        $device = $this->db->quote($deviceId);
+        
+        $this->db->exec("UPDATE `codes` SET `assigned_device_id` = {$device} WHERE `user_id` = {$user} AND `code` = {$code} LIMIT 1");
+    }
+
     public function getActiveCodeInfo($codeValue)
     {
         $timeFrom = time() - self::ACTIVETIME;

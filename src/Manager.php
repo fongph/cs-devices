@@ -204,6 +204,8 @@ class Manager
             }
         }
 
+        $deviceCode->setCodeDevice($code, $info['user_id'], $deviceRecord->getId());
+        
         $deviceDb = $this->getDeviceDbConnection($deviceRecord->getId());
         $deviceDb->beginTransaction();
         $this->createDeviceIitialSettings($deviceDb, $deviceRecord->getId());
