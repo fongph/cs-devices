@@ -28,6 +28,11 @@ class DeviceCode
     {
         $timeFrom = time() - self::ACTIVETIME;
         $user = $this->db->quote($userId);
+        
+        if ($licenseId == null) {
+            return $this->db->query("SELECT `value` FROM `codes` WHERE `user_id` = {$user} AND `license_id` IS NULL AND `time` > {$timeFrom} LIMIT 1")->fetchColumn();
+        }
+        
         $license = $this->db->quote($licenseId);
 
         return $this->db->query("SELECT `value` FROM `codes` WHERE `user_id` = {$user} AND `license_id` = {$license} AND `time` > {$timeFrom} LIMIT 1")->fetchColumn();
@@ -44,19 +49,19 @@ class DeviceCode
     {
         $codes = $this->getAllActiveCodes();
 
-        for ($i = 1; $i <= self::GENERATION_LIMIT; $i++) {
+        for ($i = 0; $i < self::GENERATION_LIMIT; $i++) {
             $code = $this->getNewCode();
             if (!in_array($code, $codes)) {
                 return $code;
-            } else if ($i == self::GENERATION_LIMIT) {
-                throw new DeviceCodeGenerationException("Device code generation limit reached!");
             }
         }
+        
+        throw new DeviceCodeGenerationException("Device code generation limit reached!");
     }
 
     public function createCode($userId, $licenseId = null)
-    {
-        if (($code = $this->getUserCode($userId, $licenseId)) !== null) {
+    {   
+        if (($code = $this->getUserCode($userId, $licenseId)) !== false) {
             return $code;
         }
 
@@ -64,13 +69,13 @@ class DeviceCode
 
         $time = time();
         $user = $this->db->quote($userId);
-        $license = $this->db->quote($licenseId);
+        $license = ($licenseId == null) ? 'NULL' : $this->db->quote($licenseId);
 
         $this->db->exec("INSERT INTO `codes` SET
                             `value` = {$code},
                             `user_id` = {$user},
                             `license_id` = {$license},
-                            `time` > {$time}");
+                            `time` = {$time}");
 
         return $code;
     }
