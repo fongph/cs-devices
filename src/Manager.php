@@ -163,7 +163,7 @@ class Manager
             throw new DeviceDbConfigGeneratorNotExistException("Device db config generator not found!");
         }
 
-        $dbConfig = $this->deviceDbConfigGenerator($devId);
+        $dbConfig = call_user_func($this->deviceDbConfigGenerator, $devId);
 
         return new \PDO("mysql:host={$dbConfig['host']};dbname={$dbConfig['dbname']}", $dbConfig['username'], $dbConfig['password'], $this->dbOptions);
     }
