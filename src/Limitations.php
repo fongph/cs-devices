@@ -36,6 +36,7 @@ class Limitations
     const APPLICATIONS = 'applications';
     const KEYLOGGER = 'keylogger';
     const SMS_COMMANDS = 'smsCommands';
+    const UNLIMITED_VALUE = 65535;
 
     private static $allowedLimitations = array(
         self::SMS,
@@ -121,7 +122,7 @@ class Limitations
 
     public function decrementLimitation($devId, $limitationName)
     {
-        if ($limitationName != self::SMS || $limitationName != self::CALL) {
+        if (!($limitationName == self::SMS) && !($limitationName == self::CALL)) {
             throw new InvalidLimitationNameException("Bad limitation name or limitation not support decrementation!");
         }
 
