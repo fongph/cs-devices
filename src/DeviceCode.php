@@ -111,7 +111,7 @@ class DeviceCode
         $code = $this->db->quote($codeValue);
         $device = $this->db->quote($deviceId);
         
-        $this->db->exec("UPDATE `codes` SET `assigned_device_id` = {$device} WHERE `user_id` = {$user} AND `code` = {$code} LIMIT 1");
+        $this->db->exec("UPDATE `codes` SET `assigned_device_id` = {$device} WHERE `user_id` = {$user} AND `value` = {$code} LIMIT 1");
     }
 
     public function getActiveCodeInfo($codeValue)
