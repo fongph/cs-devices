@@ -179,7 +179,7 @@ class Manager
     {
         $deviceCode = new DeviceCode($this->db);
 
-        if (($info = $deviceCode->getActiveCodeInfo($code)) === null) {
+        if (($info = $deviceCode->getActiveCodeInfo($code)) == false) {
             throw new DeviceCodeNotFoundException("Code not found!");
         }
 
