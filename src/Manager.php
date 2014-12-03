@@ -7,7 +7,8 @@ use PDO,
     CS\Models\User\UserRecord,
     CS\Models\Device\DeviceRecord,
     CS\Models\License\LicenseRecord,
-    CS\Models\Product\ProductRecord;
+    CS\Models\Product\ProductRecord,
+    CS\Mail\MailSender;
 
 /**
  * Description of Manager
@@ -32,6 +33,12 @@ class Manager
      */
     protected $deviceDbConfigGenerator;
 
+    /**
+     *
+     * @var MailSender 
+     */
+    protected $sender;
+    
     /**
      *
      * @var array
@@ -88,6 +95,25 @@ class Manager
         return new \Predis\Client();
     }
 
+    public function setSender(MailSender $sender)
+    {
+        $this->sender = $sender;
+    }
+
+    /**
+     * 
+     * @return MailSender
+     * @throws InvalidSenderObjectException
+     */
+    private function getSender()
+    {
+        if (!($this->sender instanceof MailSender)) {
+            throw new InvalidSenderObjectException("Invalid mail sender object!");
+        }
+
+        return $this->sender;
+    }
+    
     /**
      * 
      * @param int $id
@@ -217,26 +243,9 @@ class Manager
         $limitations = new Limitations($this->db);
         $limitations->updateDeviceLimitations($deviceRecord->getId(), true);
 
-        /* $message = '<!DOCTYPE html>
-          <html>
-          <head>
-          <title>Pumpic: New Device Added</title>
-          </head>
-          <body>
-          <div class="wrap" style="margin: 20px auto;width: 700px;overflow: hidden;font-family: Arial, sans-serif;font-size: 16px;color:#333;">
-          <a class="logo" href="http://cp.pumpic.com" style="float: right;margin: 10px 20px;"><img src="http://www.pumpic.com/wp-content/themes/pumpicapp/images/logo.png"></a>
-          <div class="block" style="width: 636px;float: left;padding: 0 30px;border-radius: 20px;border: 2px solid #0090d3;">
-          <h1 style="text-align:center;font-size:35px;  font-weight: bold;">New <span style="color:#0090d3;">Device</span> Added</h1>
-          <p style="line-height: 20px;">Hello again!</p>
-          <p style="line-height: 20px;">Your device ' . $name . ' has been added to your account on pumpic.com. Yay!</p>
-          <br>
-          <p style="line-height:20px;">Pumpic Team<br/>support@pumpic.com<br/>http://pumpic.com</p>
-          </div>
-          </div>
-          </body>
-          </html>';
-
-          $this->sendMail($email, "Pumpic: New Device Added", $message); */
+        $userEmail = $this->getUser($info['user_id'])->getLogin();
+        
+        $this->getSender()->sendNewDeviceAdded($userEmail, $name);
 
         $deviceDb->commit();
         $this->db->commit();

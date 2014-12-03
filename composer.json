@@ -7,12 +7,17 @@
         {
             "type": "git",
             "url": "git@bitbucket.org:boomersweb/cs-models.git"
+        },
+        {
+            "type": "git",
+            "url": "git@bitbucket.org:boomersweb/cs-mail.git"
         }
     ],
     "require": {
         "php": ">=5.4.0",
+        "predis/predis": "1.0.0",
         "boomers/cs-models": "dev-master",
-        "predis/predis": "1.0.0"
+        "boomers/cs-mail": "dev-master"
     },
     "require-dev": {
         "phpunit/phpunit": "4.*"
