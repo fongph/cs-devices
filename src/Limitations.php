@@ -209,7 +209,11 @@ class Limitations
             return;
         }
 
-        $deviceLimitation->setValue(0);
+        if ($resetCount) {
+            $deviceLimitation = $this->clearLimitation($deviceLimitation);
+        } else {
+            $deviceLimitation->setValue(0);
+        }
         
         $resultLimitation = $this->mergeLimitations($deviceLimitation, $mainPackages[0], $resetCount);
 
