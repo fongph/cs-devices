@@ -209,6 +209,8 @@ class Limitations
             return;
         }
 
+        $deviceLimitation->setValue(0);
+        
         $resultLimitation = $this->mergeLimitations($deviceLimitation, $mainPackages[0], $resetCount);
 
         $options = $this->getDeviceLicenseLimitationsList($devId, ProductRecord::TYPE_OPTION);
