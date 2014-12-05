@@ -200,7 +200,6 @@ class Manager
         return $deviceCode->getUserCodeInfo($userId, $code);
     }
     
-    //@TODO: send emails
     public function addDeviceWithCode($deviceUniqueId, $code, $name)
     {
         $deviceCode = new DeviceCode($this->db);
@@ -242,10 +241,6 @@ class Manager
 
         $limitations = new Limitations($this->db);
         $limitations->updateDeviceLimitations($deviceRecord->getId(), true);
-
-        $userEmail = $this->getUser($info['user_id'])->getLogin();
-        
-        $this->getSender()->sendNewDeviceAdded($userEmail, $name);
 
         $deviceDb->commit();
         $this->db->commit();
