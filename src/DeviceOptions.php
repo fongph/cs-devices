@@ -10,15 +10,9 @@ namespace CS\Devices;
 class DeviceOptions
 {
 
-    public static function isLockActive($os, $osVersion)
+    public static function isLockActive()
     {
-        if ($os === 'android') {
-            return true;
-        } else if ($os === 'ios' && self::compareOSVersion('ios', '7.1', $osVersion, '<')) {
-            return true;
-        }
-
-        return false;
+        return true;
     }
 
     public static function isBlockSMSActive($os, $osVersion)
