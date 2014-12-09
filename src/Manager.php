@@ -166,14 +166,14 @@ class Manager
     {
         $uniqueId = $this->db->quote($devUniqueId);
 
-        return $this->getDb()->query("SELECT COUNT(*) FROM `devices` WHERE `unique_id` = {$uniqueId}")->fetchColumn() > 0;
+        return $this->getDb()->query("SELECT COUNT(*) FROM `devices` WHERE `unique_id` = {$uniqueId} AND `deleted` = 0 LIMIT 1")->fetchColumn() > 0;
     }
 
     public function getDeviceId($devUniqueId)
     {
         $uniqueId = $this->db->quote($devUniqueId);
 
-        return $this->getDb()->query("SELECT `id` FROM `devices` WHERE `unique_id` = {$uniqueId} LIMIT 1")->fetchColumn();
+        return $this->getDb()->query("SELECT `id` FROM `devices` WHERE `unique_id` = {$uniqueId} AND `deleted` = 0 LIMIT 1")->fetchColumn();
     }
 
     public function getUserDeviceAddCode($userId, $licenseId = null)
@@ -220,7 +220,7 @@ class Manager
             $licenseRecord = new LicenseRecord($this->db);
             $licenseRecord->load($info['license_id']);
 
-            if ($licenseRecord->getDeviceId() === null &&
+            if ($licenseRecord->getDeviceId() === false &&
                     $licenseRecord->getStatus() === LicenseRecord::STATUS_AVAILABLE) {
                 
                 $licenseRecord->setDeviceId($deviceRecord->getId())
