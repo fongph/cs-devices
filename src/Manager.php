@@ -220,7 +220,7 @@ class Manager
             $licenseRecord = new LicenseRecord($this->db);
             $licenseRecord->load($info['license_id']);
 
-            if ($licenseRecord->getDeviceId() === false &&
+            if ($licenseRecord->getDeviceId() === null &&
                     $licenseRecord->getStatus() === LicenseRecord::STATUS_AVAILABLE) {
                 
                 $licenseRecord->setDeviceId($deviceRecord->getId())
