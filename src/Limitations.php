@@ -36,6 +36,7 @@ class Limitations
     const APPLICATIONS = 'applications';
     const KEYLOGGER = 'keylogger';
     const SMS_COMMANDS = 'smsCommands';
+    const INSTAGRAM = 'instagram';
     const UNLIMITED_VALUE = 65535;
 
     private static $allowedLimitations = array(
@@ -58,7 +59,8 @@ class Limitations
         self::EMAILS,
         self::APPLICATIONS,
         self::KEYLOGGER,
-        self::SMS_COMMANDS
+        self::SMS_COMMANDS,
+        self::INSTAGRAM
     );
     private static $masks = array(
         self::SMS => Limitation::SMS,
@@ -80,7 +82,8 @@ class Limitations
         self::EMAILS => Limitation::EMAILS,
         self::APPLICATIONS => Limitation::APPLICATIONS,
         self::KEYLOGGER => Limitation::KEYLOGGER,
-        self::SMS_COMMANDS => Limitation::SMS_COMMANDS
+        self::SMS_COMMANDS => Limitation::SMS_COMMANDS,
+        self::INSTAGRAM => Limitation::INSTAGRAM
     );
 
     /**
