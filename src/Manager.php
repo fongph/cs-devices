@@ -93,7 +93,7 @@ class Manager
             call_user_func_array($this->afterSaveCallback, func_get_args());
     }
 
-    public function getDevice()
+    public function getProcessedDevice()
     {
         return $this->device;
     }
@@ -220,7 +220,7 @@ class Manager
      * @param type $id
      * @return DeviceRecord
      */
-    public function findDevice($id = null)
+    public function getDevice($id = null)
     {
         $device = new DeviceRecord($this->db);
 
