@@ -495,7 +495,7 @@ class Manager
                                         LEFT JOIN `products` p ON p.`id` = l.`product_id`
                                         WHERE
                                             d.`user_id` = {$escapedUserId} AND
-                                            d.`deleted` = 0")->fetchAll(\PDO::FETCH_ASSOC);
+                                            d.`deleted` = 0")->fetchAll(\PDO::FETCH_ASSOC | \PDO::FETCH_UNIQUE);
     }
 
     public function getUserActiveDevices($userId)
