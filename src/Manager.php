@@ -293,16 +293,20 @@ class Manager
     {
         $escapedDevId = $this->db->quote($devId);
         $productType = $this->db->quote(ProductRecord::TYPE_PACKAGE);
-        $status = $this->db->quote(LicenseRecord::STATUS_ACTIVE);
 
         return $this->db->query("SELECT 
                                 COUNT(*) 
                             FROM `licenses` 
                             WHERE
                                 `device_id` = {$escapedDevId} AND
-                                `product_type` = {$productType} AND
-                                `status` = {$status}
+                                `product_type` = {$productType}
                             LIMIT 1")->fetchColumn() > 0;
+    }
+    
+    public function removeDeviceLicenses($devId) {
+        $escapedDevId = $this->db->quote($devId);
+        
+        return $this->db->exec("UPDATE `licenses` SET `device_id` = NULL WHERE `device_id` = {$escapedDevId}");
     }
 
     public function assignLicenseToDevice($licenseId, $deviceId)
@@ -329,6 +333,11 @@ class Manager
         }
     }
 
+    /**
+     * @deprecated 
+     * @param type $userId
+     * @return type
+     */
     public function getUserUnAssignedDevicesList($userId)
     {
         $escapedUserId = $this->getDb()->quote($userId);
@@ -351,6 +360,23 @@ class Manager
                                                     `status` = {$status} AND
                                                     `product_type` = {$productType} 
                                                 LIMIT 1) = 0")->fetchAll(\PDO::FETCH_KEY_PAIR);
+    }
+    
+    public function getDevicesToAssign($userId)
+    {
+        $escapedUserId = $this->getDb()->quote($userId);
+        $productType = $this->db->quote(ProductRecord::TYPE_PACKAGE);
+        
+        return $this->getDb()->query("SELECT
+                                            d.`id`,
+                                            d.`name`,
+                                            p.`name` product
+                                        FROM `devices` d
+                                        LEFT JOIN `licenses` l ON l.`device_id` = d.`id` AND l.`product_type` = {$productType}
+                                        LEFT JOIN `products` p ON p.`id` = l.`product_id`
+                                        WHERE
+                                            d.`user_id` = {$escapedUserId} AND
+                                            d.`deleted` = 0")->fetchAll(\PDO::FETCH_ASSOC);
     }
 
     public function getUserActiveDevices($userId)
