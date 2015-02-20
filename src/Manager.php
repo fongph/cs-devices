@@ -407,24 +407,25 @@ class Manager
                             LIMIT 1")->fetchColumn() > 0;
     }
 
-    public function hasDevicePackageLicense($devId)
+    public function hasDevicePackageLicense($deviceId)
     {
-        $escapedDevId = $this->db->quote($devId);
+        $escapedDeviceId = $this->db->quote($deviceId);
         $productType = $this->db->quote(ProductRecord::TYPE_PACKAGE);
 
         return $this->db->query("SELECT 
                                 COUNT(*) 
                             FROM `licenses` 
                             WHERE
-                                `device_id` = {$escapedDevId} AND
+                                `device_id` = {$escapedDeviceId} AND
                                 `product_type` = {$productType}
                             LIMIT 1")->fetchColumn() > 0;
     }
     
-    public function removeDeviceLicenses($devId) {
-        $escapedDevId = $this->db->quote($devId);
-        
-        return $this->db->exec("UPDATE `licenses` SET `device_id` = NULL WHERE `device_id` = {$escapedDevId}");
+    public function removeDeviceLicenses($deviceId) {
+        $status = $this->db->quote(LicenseRecord::STATUS_INACTIVE);
+        $escapedDeviceId = $this->getDb()->quote($deviceId);
+
+        return $this->getDb()->exec("UPDATE `licenses` SET `status` = {$status}, `device_id` = NULL WHERE `device_id` = {$escapedDeviceId}");
     }
 
     public function assignLicenseToDevice($licenseId, $deviceId)
@@ -557,10 +558,7 @@ class Manager
                 ->setDeleted()
                 ->save();
 
-        $status = $this->db->quote(LicenseRecord::STATUS_INACTIVE);
-        $escapedDeviceId = $this->getDb()->quote($deviceId);
-
-        $this->getDb()->exec("UPDATE `licenses` SET `status` = {$status}, `device_id` = NULL WHERE `device_id` = {$escapedDeviceId}");
+        $this->removeDeviceLicenses($deviceId);
 
         $this->updateDeviceLimitations($deviceId, true);
     }
