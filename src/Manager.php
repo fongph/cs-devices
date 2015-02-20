@@ -554,7 +554,7 @@ class Manager
 
     public function deleteDevice($deviceId)
     {
-        $this->findDevice($deviceId)
+        $this->getDevice($deviceId)
                 ->setDeleted()
                 ->save();
 
