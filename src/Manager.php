@@ -498,13 +498,18 @@ class Manager
                                             d.`deleted` = 0")->fetchAll(\PDO::FETCH_ASSOC | \PDO::FETCH_UNIQUE);
     }
 
-    public function getUserActiveDevices($userId)
+    public function getUserActiveDevices($userId, $platform = null)
     {
         $escapedUserId = $this->getDb()->quote($userId);
         $productType = $this->db->quote(ProductRecord::TYPE_PACKAGE);
         $status = $this->db->quote(LicenseRecord::STATUS_ACTIVE);
 
         $minOnlineTime = time() - self::ONLINE_PERIOD;
+        
+        if($platform){
+            $platformCondition = "AND d.`os` = {$this->db->quote($platform)}";
+            
+        } else $platformCondition = '';
 
         return $this->getDb()->query("SELECT
                     d.`id`,
@@ -528,6 +533,7 @@ class Manager
                 WHERE
                     d.`user_id` = {$escapedUserId} AND
                     d.`deleted` = 0
+                    {$platformCondition}
                 GROUp BY d.`id`")->fetchAll(\PDO::FETCH_ASSOC | \PDO::FETCH_UNIQUE);
     }
     
