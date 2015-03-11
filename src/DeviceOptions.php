@@ -10,7 +10,7 @@ namespace CS\Devices;
 class DeviceOptions
 {
 
-    public static function isLockActive()
+    public static function isLockActive($os)
     {
         if ($os == 'blackberry' || $os == 'icloud') {
             return false;
@@ -182,6 +182,23 @@ class DeviceOptions
             return self::compareOSVersion('android', '4.4', $osVersion, '<');
         }
 
+        return true;
+    }
+
+    public static function isLocationsActive($os)
+    {
+        if ($os == 'icloud') {
+            return false;
+        }
+
+        return true;
+    }
+
+    public static function isInstagramActive($os)
+    {
+        if ($os == 'icloud' || $os == 'blackberry') {
+            return false;
+        }
         return true;
     }
 
