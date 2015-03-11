@@ -498,53 +498,6 @@ class Manager
                                             d.`deleted` = 0")->fetchAll(\PDO::FETCH_ASSOC | \PDO::FETCH_UNIQUE);
     }
     
-    public function getUserProfileDevices($userId)
-    {
-        $escapedUserId = $this->getDb()->quote($userId);
-        $productType = $this->db->quote(ProductRecord::TYPE_PACKAGE);
-        $status = $this->db->quote(LicenseRecord::STATUS_ACTIVE);
-
-        $minOnlineTime = time() - self::ONLINE_PERIOD;
-        $data = $this->getDb()->query("
-                    SELECT
-                        *,
-                        IF(d.last_visit > {$minOnlineTime}, 1, 0) online,
-                        if(COUNT(l.id), 1, 0) as active,
-                        d.id device_id,
-                        d.name device_name,
-                        p.name package_name,
-                        di.id icloud_id,
-                        UNIX_TIMESTAMP(di.last_backup) last_backup
-                    FROM `devices` d
-                    LEFT JOIN `devices_icloud` di ON di.dev_id = d.id
-                    LEFT JOIN `licenses` l ON 
-                        l.`device_id` = d.`id` AND
-                        l.`product_type` = {$productType} AND
-                        l.`status` = {$status}
-                    LEFT JOIN `products` p ON p.`id` = l.`product_id`
-                    WHERE
-                        d.`user_id` = {$escapedUserId} AND
-                        d.`deleted` = 0
-                    GROUp BY d.`id`
-                ")->fetchAll(\PDO::FETCH_ASSOC);
-        foreach($data as &$item) {
-            
-            if($item['os'] == DeviceRecord::OS_ANDROID && $item['os_version']){
-                list(,$clearOsVersion) = explode('_', $item['os_version']);
-                if($clearOsVersion) $item['os_version'] = $clearOsVersion;
-            }
-            
-            if($item['os'] == 'icloud'){
-                $sync = $item['last_backup'];
-            } else $sync = $item['last_visit'];
-
-            if($sync) $item['last_sync'] = date('j M Y g:i A', $sync);
-            else $item['last_sync'] = '-';
-        }
-
-        return $data;
-    }
-
     public function getUserActiveDevices($userId, $platform = null)
     {
         $escapedUserId = $this->getDb()->quote($userId);
