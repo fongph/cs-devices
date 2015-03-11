@@ -12,6 +12,10 @@ class DeviceOptions
 
     public static function isLockActive()
     {
+        if ($os == 'blackberry' || $os == 'icloud') {
+            return false;
+        }
+        
         return true;
     }
 
@@ -82,7 +86,7 @@ class DeviceOptions
 
     public static function isKeyloggerActive($os)
     {
-        if ($os == 'blackberry') {
+        if ($os == 'blackberry' || $os == 'icloud') {
             return false;
         }
 
@@ -91,7 +95,7 @@ class DeviceOptions
 
     public static function isPhotosActive($os)
     {
-        if ($os == 'blackberry') {
+        if ($os == 'blackberry' || $os == 'icloud') {
             return false;
         }
 
@@ -100,7 +104,7 @@ class DeviceOptions
 
     public static function isVideosActive($os)
     {
-        if ($os == 'blackberry') {
+        if ($os == 'blackberry' || $os == 'icloud') {
             return false;
         }
 
@@ -109,7 +113,7 @@ class DeviceOptions
 
     public static function isViberActive($os)
     {
-        if ($os == 'blackberry') {
+        if ($os == 'blackberry' || $os == 'icloud') {
             return false;
         }
 
@@ -118,7 +122,7 @@ class DeviceOptions
 
     public static function isSkypeActive($os)
     {
-        if ($os == 'blackberry') {
+        if ($os == 'blackberry' || $os == 'icloud') {
             return false;
         }
 
@@ -127,7 +131,7 @@ class DeviceOptions
 
     public static function isWhatsappActive($os)
     {
-        if ($os == 'blackberry') {
+        if ($os == 'blackberry' || $os == 'icloud') {
             return false;
         }
 
@@ -136,7 +140,7 @@ class DeviceOptions
 
     public static function isFacebookActive($os)
     {
-        if ($os == 'blackberry') {
+        if ($os == 'blackberry' || $os == 'icloud') {
             return false;
         }
 
@@ -145,7 +149,7 @@ class DeviceOptions
 
     public static function isVkActive($os)
     {
-        if ($os == 'blackberry') {
+        if ($os == 'blackberry' || $os == 'icloud') {
             return false;
         }
 
@@ -154,7 +158,7 @@ class DeviceOptions
 
     public static function isEmailsActive($os)
     {
-        if ($os == 'blackberry') {
+        if ($os == 'blackberry' || $os == 'icloud') {
             return false;
         }
 
@@ -163,7 +167,7 @@ class DeviceOptions
 
     public static function isApplicationsActive($os)
     {
-        if ($os == 'blackberry') {
+        if ($os == 'blackberry' || $os == 'icloud') {
             return false;
         }
 
@@ -172,7 +176,7 @@ class DeviceOptions
 
     public static function isSmsCommandsActive($os, $osVersion)
     {
-        if ($os == 'blackberry') {
+        if ($os == 'blackberry' || $os == 'icloud') {
             return false;
         } else if ($os == 'android') {
             return self::compareOSVersion('android', '4.4', $osVersion, '<');
