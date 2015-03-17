@@ -214,5 +214,54 @@ class DeviceOptions
 
         return version_compare($osVersion, $compVersion, $operator);
     }
+    
+    public static function isBlackListAvailable($os)
+    {
+        if($os == 'icloud'){
+            return false;
+            
+        } else return true;
+    }
+    
+    public static function isSimNotificationAvailable($os)
+    {
+        if($os == 'icloud'){
+            return false;
+
+        } else return true;
+    }
+    
+    public static function isDeviceOnlineStatusAvailable($os)
+    {
+        if($os == 'icloud'){
+            return false;
+
+        } else return true;
+    }
+
+    public static function isDeviceCommandsAvailable($os)
+    {
+        if($os == 'icloud'){
+            return false;
+
+        } else return true;
+    }
+
+    public static function isDeviceBlockSiteAvailable($os)
+    {
+        if($os == 'icloud'){
+            return false;
+
+        } else return true;
+    }
+
+    public static function isDeletedDataAvailable($os)
+    {
+        if($os == 'icloud'){
+            return false;
+
+        } else return true;
+    }
+
 
 }
