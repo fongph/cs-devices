@@ -230,14 +230,6 @@ class DeviceOptions
 
         } else return true;
     }
-    
-    public static function isDeviceOnlineStatusAvailable($os)
-    {
-        if($os == 'icloud'){
-            return false;
-
-        } else return true;
-    }
 
     public static function isDeviceCommandsAvailable($os)
     {
