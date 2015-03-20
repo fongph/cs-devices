@@ -65,6 +65,18 @@ abstract class DeviceObserverDependencies {
         return $this->license;
     }
 
+    private $beforeSave;
+    public function setBeforeSave(callable $callable)
+    {
+        $this->beforeSave = $callable;
+        return $this;
+    }
+    protected function beforeSave()
+    {
+        if(is_callable($this->beforeSave))
+            return call_user_func($this->beforeSave);
+        else return true;
+    }
 
     private $afterSave;
     public function setAfterSave(callable $callable)

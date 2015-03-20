@@ -12,6 +12,9 @@ class DeviceObserver extends DeviceObserverDependencies {
     {
         $this->getMainDb()->beginTransaction();
 
+        if(!$this->beforeSave())
+            throw new \Exception('DeviceObserver->beforeSave() return FALSE');
+            
         if(!$this->getDevice()->getId())
             $this->getDevice()->save();
         
