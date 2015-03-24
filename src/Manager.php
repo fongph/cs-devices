@@ -3,6 +3,7 @@
 namespace CS\Devices;
 
 use PDO,
+    CS\Queue\BackupQueueUnit,
     CS\Models\Site\SiteRecord,
     CS\Models\User\UserRecord,
     CS\Models\Device\DeviceRecord,
@@ -54,6 +55,8 @@ class Manager
      * (20 min)
      */
     const ONLINE_PERIOD = 1200;
+    /** 24 hours */
+    const SYNC_PERIOD = 86400;
 
     /** @var DeviceRecord */
     protected $device;
@@ -498,19 +501,18 @@ class Manager
                                             d.`deleted` = 0")->fetchAll(\PDO::FETCH_ASSOC | \PDO::FETCH_UNIQUE);
     }
     
-    public function getUserActiveDevices($userId, $platform = null)
+    public function getUserActiveDevices($userId)
     {
         $escapedUserId = $this->getDb()->quote($userId);
         $productType = $this->db->quote(ProductRecord::TYPE_PACKAGE);
         $status = $this->db->quote(LicenseRecord::STATUS_ACTIVE);
 
         $minOnlineTime = time() - self::ONLINE_PERIOD;
-        
-        if($platform){
-            $platformCondition = "AND d.`os` = {$this->db->quote($platform)}";
-            
-        } else $platformCondition = '';
+        $minSyncTime = time() - self::SYNC_PERIOD;
 
+        $syncErrorNone = $this->getDb()->quote(BackupQueueUnit::ERROR_NONE);
+        $syncErrorParse = $this->getDb()->quote(BackupQueueUnit::ERROR_PARSE);
+        
         return $this->getDb()->query("SELECT
                     d.`id`,
                     d.`unique_id`,
@@ -521,10 +523,14 @@ class Manager
                     d.`network`,
                     d.`model`,
                     IF(d.`last_visit` > {$minOnlineTime}, 1, 0) online,
+                    IF(UNIX_TIMESTAMP(di.`last_sync`) > {$minSyncTime} AND (di.`last_error` = {$syncErrorNone} OR di.`last_error` = {$syncErrorParse}), 1, 0) sync,
                     d.`rooted`,
                     if(COUNT(l.`id`), 1, 0) as `active`,
                     p.`name` package_name
                 FROM `devices` d
+                LEFT JOIN `devices_icloud` di ON
+                    d.`os` = {$this->getDb()->quote(DeviceRecord::OS_ICLOUD)} AND
+                    d.`id` = di.`dev_id`
                 LEFT JOIN `licenses` l ON 
                     l.`device_id` = d.`id` AND
                     l.`product_type` = {$productType} AND
@@ -533,7 +539,6 @@ class Manager
                 WHERE
                     d.`user_id` = {$escapedUserId} AND
                     d.`deleted` = 0
-                    {$platformCondition}
                 GROUp BY d.`id`")->fetchAll(\PDO::FETCH_ASSOC | \PDO::FETCH_UNIQUE);
     }
     
