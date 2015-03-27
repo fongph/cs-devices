@@ -523,7 +523,7 @@ class Manager
                     d.`network`,
                     d.`model`,
                     IF(d.`last_visit` > {$minOnlineTime}, 1, 0) online,
-                    IF(UNIX_TIMESTAMP(di.`last_sync`) > {$minSyncTime} AND (di.`last_error` = {$syncErrorNone} OR di.`last_error` = {$syncErrorParse}), 1, 0) sync,
+                    IF(di.`last_sync` > {$minSyncTime} AND (di.`last_error` = {$syncErrorNone} OR di.`last_error` = {$syncErrorParse}), 1, 0) sync,
                     d.`rooted`,
                     if(COUNT(l.`id`), 1, 0) as `active`,
                     p.`name` package_name
