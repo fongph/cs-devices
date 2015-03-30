@@ -15,7 +15,7 @@ class DeviceOptions
         if ($os == 'blackberry' || $os == 'icloud') {
             return false;
         }
-        
+
         return true;
     }
 
@@ -164,7 +164,7 @@ class DeviceOptions
 
         return true;
     }
-    
+
     public static function isEmailsActive($os)
     {
         if ($os == 'blackberry' || $os == 'icloud') {
@@ -223,53 +223,63 @@ class DeviceOptions
 
         return version_compare($osVersion, $compVersion, $operator);
     }
-    
+
     public static function isBlackListAvailable($os)
     {
-        if($os == 'icloud'){
+        if ($os == 'icloud') {
             return false;
-            
-        } else return true;
+        } else
+            return true;
     }
-    
+
     public static function isSimNotificationAvailable($os)
     {
-        if($os == 'icloud'){
+        if ($os == 'icloud') {
             return false;
-
-        } else return true;
+        } else
+            return true;
     }
 
     public static function isDeviceCommandsAvailable($os)
     {
-        if($os == 'icloud'){
+        if ($os == 'icloud') {
             return false;
-
-        } else return true;
+        } else
+            return true;
     }
 
     public static function isDeviceBlockSiteAvailable($os)
     {
-        if($os == 'icloud'){
+        if ($os == 'icloud') {
             return false;
-
-        } else return true;
+        } else
+            return true;
     }
 
     public static function isDeletedDataAvailable($os)
     {
-        if($os == 'icloud'){
+        if ($os == 'icloud') {
             return false;
-
-        } else return true;
+        } else
+            return true;
     }
-    
+
     public static function isOutgoingSmsLimitationsAvailable($os)
     {
-        if ($os == 'android') {
-            return self::isKeyloggerActive($os);
+        if ($os == 'blackberry' || $os == 'icloud') {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function isOutgoingSmsLimitationsActive($os, $keyloggerEnabled)
+    {
+        if ($os == 'android' && !$keyloggerEnabled) {
+            return false;
         }
         
-        return false;
+        return self::isOutgoingSmsLimitationsAvailable($os);
     }
+
 }
