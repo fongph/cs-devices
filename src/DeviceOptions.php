@@ -156,6 +156,15 @@ class DeviceOptions
         return true;
     }
 
+    public static function isKikActive($os)
+    {
+        if ($os == 'blackberry' || $os == 'icloud') {
+            return false;
+        }
+
+        return true;
+    }
+    
     public static function isEmailsActive($os)
     {
         if ($os == 'blackberry' || $os == 'icloud') {
@@ -254,6 +263,13 @@ class DeviceOptions
 
         } else return true;
     }
-
-
+    
+    public static function isOutgoingSmsLimitationsAvailable($os)
+    {
+        if ($os == 'android') {
+            return self::isKeyloggerActive($os);
+        }
+        
+        return false;
+    }
 }
