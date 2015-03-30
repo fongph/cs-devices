@@ -273,7 +273,7 @@ class DeviceOptions
         return true;
     }
 
-    public function isOutgoingSmsLimitationsActive($os, $keyloggerEnabled)
+    public static function isOutgoingSmsLimitationsActive($os, $keyloggerEnabled)
     {
         if ($os == 'android' && !$keyloggerEnabled) {
             return false;
