@@ -229,25 +229,31 @@ class Manager
     public function setSender(MailSender $sender)
     {
         $this->sender = $sender;
+
+        return $this;
     }
 
-    public function setUsersNotesProcessor(UsersNotes $usersNotes) {
+    public function setUsersNotesProcessor(UsersNotes $usersNotes)
+    {
         $this->usersNotes = $usersNotes;
+
+        return $this;
     }
-    
+
     /**
      * 
      * @return UsersNotes
      * @throws Exception
      */
-    private function getUsersNotesProcessor() {
+    private function getUsersNotesProcessor()
+    {
         if ($this->usersNotes instanceof UsersNotes) {
             return $this->usersNotes;
         }
-        
+
         throw new Exception("UsersNotes required");
     }
-    
+
     /**
      * 
      * @return MailSender
@@ -404,7 +410,7 @@ class Manager
         $deviceCode = new DeviceCode($this->db);
 
         $usersNotesProcessor = $this->getUsersNotesProcessor();
-        
+
         if (($info = $deviceCode->getActiveCodeInfo($code)) == false) {
             throw new DeviceCodeNotFoundException("Code not found!");
         }
@@ -416,7 +422,7 @@ class Manager
                 ->setUserId($info['user_id'])
                 ->setName($name)
                 ->save();
-        
+
         $usersNotesProcessor->deviceAdded($deviceRecord->getUserId(), $deviceRecord->getId());
 
         if ($info['license_id'] !== null) {
@@ -429,7 +435,7 @@ class Manager
                 $licenseRecord->setDeviceId($deviceRecord->getId())
                         ->setStatus(LicenseRecord::STATUS_ACTIVE)
                         ->save();
-                
+
                 $usersNotesProcessor->licenseAssigned($deviceRecord->getUserId(), $licenseRecord->getId(), $deviceRecord->getId());
             }
         }
@@ -438,7 +444,7 @@ class Manager
 
         $deviceDb = $this->getDeviceDbConnection($deviceRecord->getId());
         $deviceDb->beginTransaction();
-        
+
         $this->createDeviceIitialSettings($deviceDb, $deviceRecord->getId());
 
         $deviceLimitations = new \CS\Models\Device\Limitation\DeviceLimitationRecord($this->db);
