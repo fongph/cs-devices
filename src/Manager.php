@@ -457,7 +457,7 @@ class Manager
         $deviceDb->commit();
         $this->db->commit();
 
-        return $deviceRecord->getId();
+        return $deviceRecord;
     }
 
     private function createDeviceIitialSettings(\PDO $db, $devId)
