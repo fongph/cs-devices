@@ -11,7 +11,8 @@ use PDO,
     CS\Models\Device\Limitation\DeviceLimitationRecord,
     CS\Models\License\LicenseRecord,
     CS\Models\Product\ProductRecord,
-    CS\Mail\MailSender;
+    CS\Mail\MailSender,
+    CS\Users\UsersNotes;
 
 /**
  * Description of Manager
@@ -41,7 +42,13 @@ class Manager
      * @var MailSender 
      */
     protected $sender;
-    
+
+    /**
+     *
+     * @var UsersNotes
+     */
+    protected $usersNotes;
+
     /**
      *
      * @var array
@@ -55,16 +62,18 @@ class Manager
      * (20 min)
      */
     const ONLINE_PERIOD = 1200;
+
     /** 24 hours */
     const SYNC_PERIOD = 86400;
 
     /** @var DeviceRecord */
     protected $device;
+
     /** @var DeviceICloudRecord */
     protected $iCloudDevice;
+
     /** @var LicenseRecord */
     protected $license;
-
     protected $afterSaveCallback;
     protected $userId, $licenseId, $deviceUniqueId, $appleId, $applePassword, $deviceHash, $name, $model, $osVer, $lastBackup, $quotaUsed;
 
@@ -73,16 +82,65 @@ class Manager
         $this->db = $db;
     }
 
-    public function setUserId($userID){ $this->userId = $userID; return $this;}
-    public function setDeviceUniqueId($deviceUniqueId){ $this->deviceUniqueId = $deviceUniqueId; return $this; }
-    public function setAppleId($appleId){ $this->appleId = $appleId; return $this; }
-    public function setApplePassword($applePassword){ $this->applePassword = $applePassword; return $this; }
-    public function setDeviceHash($hash){ $this->deviceHash = $hash; return $this; }
-    public function setName($name){ $this->name = $name; return $this; }
-    public function setModel($model){ $this->model = $model; return $this; }
-    public function setOsVer($osVer){ $this->osVer = $osVer; return $this; }
-    public function setLastBackup($lastBackup){ $this->lastBackup = $lastBackup; return $this; }
-    public function setQuotaUsed($quotaUsed){ $this->quotaUsed = $quotaUsed; return $this; }
+    public function setUserId($userID)
+    {
+        $this->userId = $userID;
+        return $this;
+    }
+
+    public function setDeviceUniqueId($deviceUniqueId)
+    {
+        $this->deviceUniqueId = $deviceUniqueId;
+        return $this;
+    }
+
+    public function setAppleId($appleId)
+    {
+        $this->appleId = $appleId;
+        return $this;
+    }
+
+    public function setApplePassword($applePassword)
+    {
+        $this->applePassword = $applePassword;
+        return $this;
+    }
+
+    public function setDeviceHash($hash)
+    {
+        $this->deviceHash = $hash;
+        return $this;
+    }
+
+    public function setName($name)
+    {
+        $this->name = $name;
+        return $this;
+    }
+
+    public function setModel($model)
+    {
+        $this->model = $model;
+        return $this;
+    }
+
+    public function setOsVer($osVer)
+    {
+        $this->osVer = $osVer;
+        return $this;
+    }
+
+    public function setLastBackup($lastBackup)
+    {
+        $this->lastBackup = $lastBackup;
+        return $this;
+    }
+
+    public function setQuotaUsed($quotaUsed)
+    {
+        $this->quotaUsed = $quotaUsed;
+        return $this;
+    }
 
     public function setAfterSave(callable $callback)
     {
@@ -92,7 +150,7 @@ class Manager
 
     protected function afterSave()
     {
-        if(is_callable($this->afterSaveCallback))
+        if (is_callable($this->afterSaveCallback))
             call_user_func_array($this->afterSaveCallback, func_get_args());
     }
 
@@ -113,8 +171,9 @@ class Manager
         return $this;
     }
 
-    public function setLicenseId($licenseId){
-        if($licenseId != $this->licenseId) {
+    public function setLicenseId($licenseId)
+    {
+        if ($licenseId != $this->licenseId) {
             $this->licenseId = $licenseId;
             $this->license = null;
         }
@@ -123,7 +182,7 @@ class Manager
 
     public function getLicense()
     {
-        if(!$this->license && $this->licenseId){
+        if (!$this->license && $this->licenseId) {
             $licenseRecord = new LicenseRecord($this->db);
             $this->license = $licenseRecord->load($this->licenseId);
         }
@@ -172,6 +231,23 @@ class Manager
         $this->sender = $sender;
     }
 
+    public function setUsersNotesProcessor(UsersNotes $usersNotes) {
+        $this->usersNotes = $usersNotes;
+    }
+    
+    /**
+     * 
+     * @return UsersNotes
+     * @throws Exception
+     */
+    private function getUsersNotesProcessor() {
+        if ($this->usersNotes instanceof UsersNotes) {
+            return $this->usersNotes;
+        }
+        
+        throw new Exception("UsersNotes required");
+    }
+    
     /**
      * 
      * @return MailSender
@@ -185,7 +261,7 @@ class Manager
 
         return $this->sender;
     }
-    
+
     /**
      * 
      * @param int $id
@@ -266,65 +342,69 @@ class Manager
         return new \PDO("mysql:host={$dbConfig['host']};dbname={$dbConfig['dbname']}", $dbConfig['username'], $dbConfig['password'], $this->dbOptions);
     }
 
-    public function getUserAddCodeInfo($userId, $code) {
+    public function getUserAddCodeInfo($userId, $code)
+    {
         $deviceCode = new DeviceCode($this->db);
-        
+
         return $deviceCode->getUserCodeInfo($userId, $code);
     }
-    
-    public function addICloudDevice(){
+
+    public function addICloudDevice()
+    {
         $this->db->beginTransaction();
 
         $this->device = new DeviceRecord($this->db);
         $this->device
-            ->setUserId($this->userId)
-            ->setUniqueId($this->deviceUniqueId)
-            ->setName($this->name)
-            ->setModel($this->model)
-            ->setOSVersion($this->osVer)
-            ->save();
+                ->setUserId($this->userId)
+                ->setUniqueId($this->deviceUniqueId)
+                ->setName($this->name)
+                ->setModel($this->model)
+                ->setOSVersion($this->osVer)
+                ->save();
 
         $this->iCloudDevice = new DeviceICloudRecord($this->db);
         $this->iCloudDevice
-            ->setDevId($this->device->getId())
-            ->setAppleId($this->appleId)
-            ->setApplePassword($this->applePassword)
-            ->setDeviceHash($this->deviceHash)
-            ->setLastBackup($this->lastBackup)
-            ->setQuotaUsed($this->quotaUsed)
-            ->save();
-        
-        if(!$this->license) {
+                ->setDevId($this->device->getId())
+                ->setAppleId($this->appleId)
+                ->setApplePassword($this->applePassword)
+                ->setDeviceHash($this->deviceHash)
+                ->setLastBackup($this->lastBackup)
+                ->setQuotaUsed($this->quotaUsed)
+                ->save();
+
+        if (!$this->license) {
             $this->license = new LicenseRecord($this->db);
             $this->license->load($this->licenseId);
         }
         $this->license
-            ->setDeviceId($this->device->getId())
-            ->setStatus(LicenseRecord::STATUS_ACTIVE)
-            ->save();
+                ->setDeviceId($this->device->getId())
+                ->setStatus(LicenseRecord::STATUS_ACTIVE)
+                ->save();
 
         $deviceDb = $this->getDeviceDbConnection($this->device->getId());
         $deviceDb->beginTransaction();
         $this->createDeviceIitialSettings($deviceDb, $this->device->getId());
 
         (new DeviceLimitationRecord($this->db))
-            ->setDevice($this->device)
-            ->save();
+                ->setDevice($this->device)
+                ->save();
         (new Limitations($this->db))
-            ->updateDeviceLimitations($this->device->getId(), true);
-        
+                ->updateDeviceLimitations($this->device->getId(), true);
+
         $deviceDb->commit();
         $this->db->commit();
 
         $this->afterSave();
-        
+
         return $this->device->getId();
     }
-    
+
     public function addDeviceWithCode($deviceUniqueId, $code, $name)
     {
         $deviceCode = new DeviceCode($this->db);
 
+        $usersNotesProcessor = $this->getUsersNotesProcessor();
+        
         if (($info = $deviceCode->getActiveCodeInfo($code)) == false) {
             throw new DeviceCodeNotFoundException("Code not found!");
         }
@@ -336,6 +416,8 @@ class Manager
                 ->setUserId($info['user_id'])
                 ->setName($name)
                 ->save();
+        
+        $usersNotesProcessor->deviceAdded($deviceRecord->getUserId(), $deviceRecord->getId());
 
         if ($info['license_id'] !== null) {
             $licenseRecord = new LicenseRecord($this->db);
@@ -343,17 +425,20 @@ class Manager
 
             if ($licenseRecord->getDeviceId() === null &&
                     $licenseRecord->getStatus() === LicenseRecord::STATUS_AVAILABLE) {
-                
+
                 $licenseRecord->setDeviceId($deviceRecord->getId())
-                    ->setStatus(LicenseRecord::STATUS_ACTIVE)
-                    ->save();
+                        ->setStatus(LicenseRecord::STATUS_ACTIVE)
+                        ->save();
+                
+                $usersNotesProcessor->licenseAssigned($deviceRecord->getUserId(), $licenseRecord->getId(), $deviceRecord->getId());
             }
         }
 
         $deviceCode->setCodeDevice($code, $info['user_id'], $deviceRecord->getId());
-        
+
         $deviceDb = $this->getDeviceDbConnection($deviceRecord->getId());
         $deviceDb->beginTransaction();
+        
         $this->createDeviceIitialSettings($deviceDb, $deviceRecord->getId());
 
         $deviceLimitations = new \CS\Models\Device\Limitation\DeviceLimitationRecord($this->db);
@@ -423,8 +508,9 @@ class Manager
                                 `product_type` = {$productType}
                             LIMIT 1")->fetchColumn() > 0;
     }
-    
-    public function removeDeviceLicenses($deviceId) {
+
+    public function removeDeviceLicenses($deviceId)
+    {
         $status = $this->db->quote(LicenseRecord::STATUS_INACTIVE);
         $escapedDeviceId = $this->getDb()->quote($deviceId);
 
@@ -483,12 +569,12 @@ class Manager
                                                     `product_type` = {$productType} 
                                                 LIMIT 1) = 0")->fetchAll(\PDO::FETCH_KEY_PAIR);
     }
-    
+
     public function getDevicesToAssign($userId)
     {
         $escapedUserId = $this->getDb()->quote($userId);
         $productType = $this->db->quote(ProductRecord::TYPE_PACKAGE);
-        
+
         return $this->getDb()->query("SELECT
                                             d.`id`,
                                             d.`name`,
@@ -500,7 +586,7 @@ class Manager
                                             d.`user_id` = {$escapedUserId} AND
                                             d.`deleted` = 0")->fetchAll(\PDO::FETCH_ASSOC | \PDO::FETCH_UNIQUE);
     }
-    
+
     public function getUserActiveDevices($userId)
     {
         $escapedUserId = $this->getDb()->quote($userId);
@@ -512,7 +598,7 @@ class Manager
 
         $syncErrorNone = $this->getDb()->quote(BackupQueueUnit::ERROR_NONE);
         $syncErrorParse = $this->getDb()->quote(BackupQueueUnit::ERROR_PARSE);
-        
+
         return $this->getDb()->query("SELECT
                     d.`id`,
                     d.`unique_id`,
@@ -541,24 +627,25 @@ class Manager
                     d.`deleted` = 0
                 GROUp BY d.`id`")->fetchAll(\PDO::FETCH_ASSOC | \PDO::FETCH_UNIQUE);
     }
-    
+
     public function iCloudMergeWithLocalInfo($userId, array $iCloudDevices)
     {
-        if(empty($iCloudDevices)) return $iCloudDevices;
-        
+        if (empty($iCloudDevices))
+            return $iCloudDevices;
+
         $localDevices = array();
-        foreach($this->getUserActiveDevices($userId) as $dbDevice){
+        foreach ($this->getUserActiveDevices($userId) as $dbDevice) {
             $localDevices[$dbDevice['unique_id']] = array(
                 'active' => $dbDevice['active']
             );
         }
-        foreach($iCloudDevices as &$iCloudDev){
-            if(array_key_exists($iCloudDev['SerialNumber'], $localDevices)){
-                
+        foreach ($iCloudDevices as &$iCloudDev) {
+            if (array_key_exists($iCloudDev['SerialNumber'], $localDevices)) {
+
                 $iCloudDev['added'] = true;
                 $iCloudDev['active'] = $localDevices[$iCloudDev['SerialNumber']]['active'];
-                
-            } else $iCloudDev['added'] = $iCloudDev['active'] = false;
+            } else
+                $iCloudDev['added'] = $iCloudDev['active'] = false;
         }
         return $iCloudDevices;
     }

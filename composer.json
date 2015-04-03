@@ -11,13 +11,28 @@
         {
             "type": "git",
             "url": "git@bitbucket.org:boomersweb/cs-mail.git"
+        },
+        {
+            "type": "git",
+            "url": "git@bitbucket.org:boomersweb/cs-users.git"
+        },
+        {
+            "type": "git",
+            "url": "git@bitbucket.org:boomersweb/cs-settings.git"
+        },
+        {
+            "type": "git",
+            "url": "git@bitbucket.org:boomersweb/ip.git"
         }
     ],
     "require": {
         "php": ">=5.4.0",
         "predis/predis": "1.0.0",
         "boomers/cs-models": "dev-master",
-        "boomers/cs-mail": "dev-master"
+        "boomers/cs-mail": "dev-master",
+        "boomers/cs-users": "dev-master",
+        "boomers/cs-settings": "dev-master",
+        "boomers/ip": "dev-master"
     },
     "require-dev": {
         "phpunit/phpunit": "4.*"
