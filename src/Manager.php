@@ -423,7 +423,7 @@ class Manager
                 ->setName($name)
                 ->save();
 
-        $usersNotesProcessor->deviceAdded($deviceRecord->getUserId(), $deviceRecord->getId());
+        $usersNotesProcessor->deviceAdded($deviceRecord->getId(), $deviceRecord->getUserId());
 
         if ($info['license_id'] !== null) {
             $licenseRecord = new LicenseRecord($this->db);
