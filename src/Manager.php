@@ -530,7 +530,7 @@ class Manager
         $this->db->exec("INSERT IGNORE INTO `subscriptions_stop_list` SET `payment_method` = {$paymentMethod}, `reference_number` = {$referenceNumber}");
     }
     
-    public function closeLicense($licenseId) {
+    public function closeLicense($licenseId, $updateDeviceLimitations = true) {
         $licenseRecord = new LicenseRecord($this->db);
         $licenseRecord->load($licenseId);
         
@@ -538,28 +538,32 @@ class Manager
         
         // close all device licenses if license is main
         if ($deviceId && $licenseRecord->getProductType() === ProductRecord::TYPE_PACKAGE) {
-            $this->closeDeviceLicenses($licenseRecord->getDeviceId());
-        } else {
-            $escapedLicenseId = $this->db->quote($licenseId);
-            $subscription = $this->db->query("SELECT `payment_method`, `reference_number` FROM `subscriptions` WHERE `license_id` = {$escapedLicenseId} LIMIT 1")->fetch(PDO::FETCH_ASSOC);
-            
-            if ($subscription !== false) {
-                $this->addToSubscriptionsStopList($subscription['payment_method'], $subscription['reference_number']);
-            }
-            
-            $licenseRecord->setStatus(LicenseRecord::STATUS_INACTIVE);
-            
-            if ($deviceId) {
-                $licenseRecord->setDeviceId(null)->save();
-                
-                $this->updateDeviceLimitations($deviceId, true);
-            } else {
-                $licenseRecord->save();
-            }
+            $this->closeDeviceLicenses($licenseRecord->getDeviceId(), $updateDeviceLimitations);
+            return;
         }
+        
+        $escapedLicenseId = $this->db->quote($licenseId);
+        $subscription = $this->db->query("SELECT `payment_method`, `reference_number` FROM `subscriptions` WHERE `license_id` = {$escapedLicenseId} LIMIT 1")->fetch(PDO::FETCH_ASSOC);
+
+        if ($subscription !== false) {
+            $this->addToSubscriptionsStopList($subscription['payment_method'], $subscription['reference_number']);
+        }
+
+        $licenseRecord->setStatus(LicenseRecord::STATUS_INACTIVE);
+
+        if ($deviceId) {
+            $licenseRecord->setDeviceId(null)->save();
+
+            if ($updateDeviceLimitations) {
+                $this->updateDeviceLimitations($deviceId, true);
+            }
+        } else {
+            $licenseRecord->save();
+        }
+        
     }
     
-    public function closeDeviceLicenses($deviceId) {
+    public function closeDeviceLicenses($deviceId, $updateDeviceLimitations = true) {
         $escapedDeviceId = $this->db->quote($deviceId);
         $activeStatus = $this->db->quote(LicenseRecord::STATUS_ACTIVE);
         
@@ -579,7 +583,9 @@ class Manager
         $inactiveStatus = $this->db->quote(LicenseRecord::STATUS_INACTIVE);
         $this->getDb()->exec("UPDATE `licenses` SET `status` = {$inactiveStatus}, `device_id` = NULL WHERE `device_id` = {$escapedDeviceId}");
         
-        $this->updateDeviceLimitations($deviceId, true);
+        if ($updateDeviceLimitations) {
+            $this->updateDeviceLimitations($deviceId, true);
+        }
     }
 
     public function assignLicenseToDevice($licenseId, $deviceId)
