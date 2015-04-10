@@ -527,7 +527,7 @@ class Manager
         $paymentMethod = $this->db->quote($paymentMethod);
         $referenceNumber = $this->db->quote($referenceNumber);
         
-        $this->db->exev("INSERT IGNORE INTO `subscriptions_stop_list` SET `payment_method` = {$paymentMethod}, `reference_number` = {$referenceNumber}");
+        $this->db->exec("INSERT IGNORE INTO `subscriptions_stop_list` SET `payment_method` = {$paymentMethod}, `reference_number` = {$referenceNumber}");
     }
     
     public function closeLicense($licenseId) {
