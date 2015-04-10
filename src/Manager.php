@@ -522,6 +522,65 @@ class Manager
 
         return $this->getDb()->exec("UPDATE `licenses` SET `status` = {$status}, `device_id` = NULL WHERE `device_id` = {$escapedDeviceId}");
     }
+    
+    private function addToSubscriptionsStopList($paymentMethod, $referenceNumber) {
+        $paymentMethod = $this->db->quote($paymentMethod);
+        $referenceNumber = $this->db->quote($referenceNumber);
+        
+        $this->db->execute("INSERT IGNORE INTO `subscriptions_stop_list` SET `payment_method` = {$paymentMethod}, `reference_number` = {$referenceNumber}");
+    }
+    
+    public function closeLicense($licenseId) {
+        $licenseRecord = new LicenseRecord($this->db);
+        $licenseRecord->load($licenseId);
+        
+        $deviceId = $licenseRecord->getDeviceId();
+        
+        // close all device licenses if license is main
+        if ($deviceId && $licenseRecord->getProductType() === ProductRecord::TYPE_PACKAGE) {
+            $this->closeDeviceLicenses($licenseRecord->getDeviceId());
+        } else {
+            $escapedLicenseId = $this->db->quote($licenseId);
+            $subscription = $this->db->query("SELECT `payment_method`, `reference_number` FROM `subscriptions` WHERE `license_id` = {$escapedLicenseId} LIMIT 1")->fetch(PDO::FETCH_ASSOC);
+            
+            if ($subscription !== false) {
+                $this->addToSubscriptionsStopList($subscription['payment_method'], $subscription['reference_number']);
+            }
+            
+            $licenseRecord->setStatus(LicenseRecord::STATUS_INACTIVE);
+            
+            if ($deviceId) {
+                $licenseRecord->setDeviceId(null)->save();
+                
+                $this->updateDeviceLimitations($deviceId, true);
+            } else {
+                $licenseRecord->save();
+            }
+        }
+    }
+    
+    public function closeDeviceLicenses($deviceId) {
+        $escapedDeviceId = $this->db->quote($deviceId);
+        $activeStatus = $this->db->quote(LicenseRecord::STATUS_ACTIVE);
+        
+        $deviceSubscriptions = $this->db->query("SELECT 
+                s.`payment_method`,
+                s.`reference_number`
+            FROM `licenses` l
+            INNER JOIN `subscriptions` s ON s.`license_id` = l.`id`
+            WHERE
+                l.`device_id` = {$escapedDeviceId} AND
+                l.`status` = {$activeStatus}")->fetchAll(PDO::FETCH_ASSOC);
+        
+        foreach ($deviceSubscriptions as $subscription) {
+            $this->addToSubscriptionsStopList($subscription['payment_method'], $subscription['reference_number']);
+        }
+
+        $inactiveStatus = $this->db->quote(LicenseRecord::STATUS_INACTIVE);
+        $this->getDb()->exec("UPDATE `licenses` SET `status` = {$inactiveStatus}, `device_id` = NULL WHERE `device_id` = {$escapedDeviceId}");
+        
+        $this->updateDeviceLimitations($deviceId, true);
+    }
 
     public function assignLicenseToDevice($licenseId, $deviceId)
     {
@@ -662,9 +721,11 @@ class Manager
                 ->setDeleted()
                 ->save();
 
-        $this->removeDeviceLicenses($deviceId);
+        $this->closeDeviceLicenses($deviceId);
 
         $this->updateDeviceLimitations($deviceId, true);
+
+        $this->getUsersNotesProcessor()->deviceDeleted($deviceId);
     }
 
 }
