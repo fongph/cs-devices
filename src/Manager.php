@@ -436,7 +436,7 @@ class Manager
                         ->setStatus(LicenseRecord::STATUS_ACTIVE)
                         ->save();
 
-                $usersNotesProcessor->licenseAssigned($deviceRecord->getUserId(), $licenseRecord->getId(), $deviceRecord->getId());
+                $usersNotesProcessor->licenseAssigned($licenseRecord->getId(), $deviceRecord->getId(), $deviceRecord->getUserId());
             }
         }
 
