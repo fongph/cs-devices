@@ -523,14 +523,38 @@ class Manager
         return $this->getDb()->exec("UPDATE `licenses` SET `status` = {$status}, `device_id` = NULL WHERE `device_id` = {$escapedDeviceId}");
     }
     
-    private function addToSubscriptionsStopList($paymentMethod, $referenceNumber) {
-        $paymentMethod = $this->db->quote($paymentMethod);
-        $referenceNumber = $this->db->quote($referenceNumber);
+    /**
+     * Add subscription data to specific list that will be proccessed with autorebill canceling
+     * 
+     * @param type $paymentMethod
+     * @param type $referenceNumber
+     * @param type $userId license owner
+     * @param type $adminId
+     */
+    private function addToSubscriptionsStopList($paymentMethod, $referenceNumber, $userId = null, $adminId = null) {
+        $escapedPaymentMethod = $this->db->quote($paymentMethod);
+        $escapedReferenceNumber = $this->db->quote($referenceNumber);
         
-        $this->db->exec("INSERT IGNORE INTO `subscriptions_stop_list` SET `payment_method` = {$paymentMethod}, `reference_number` = {$referenceNumber}");
+        if ($userId !== null) {
+            $escapedUserId = $this->db->quote($userId);
+        } else {
+            $escapedUserId = 'NULL';
+        }
+        
+        if ($userId !== null) {
+            $escapedAdminId = $this->db->quote($adminId);
+        } else {
+            $escapedAdminId = 'NULL';
+        }
+        
+        $this->db->exec("INSERT IGNORE INTO `subscriptions_stop_list` SET 
+                            `payment_method` = {$escapedPaymentMethod},
+                            `reference_number` = {$escapedReferenceNumber},
+                            `user_id` = {$escapedUserId},
+                            `admin_id` = {$escapedAdminId}");
     }
     
-    public function closeLicense($licenseId, $updateDeviceLimitations = true) {
+    public function closeLicense($licenseId, $updateDeviceLimitations = true, $actorAdminId = null) {
         $licenseRecord = new LicenseRecord($this->db);
         $licenseRecord->load($licenseId);
         
@@ -546,7 +570,7 @@ class Manager
         $subscription = $this->db->query("SELECT `payment_method`, `reference_number` FROM `subscriptions` WHERE `license_id` = {$escapedLicenseId} LIMIT 1")->fetch(PDO::FETCH_ASSOC);
 
         if ($subscription !== false) {
-            $this->addToSubscriptionsStopList($subscription['payment_method'], $subscription['reference_number']);
+            $this->addToSubscriptionsStopList($subscription['payment_method'], $subscription['reference_number'], $licenseRecord->getUserId(), $actorAdminId);
         }
 
         $licenseRecord->setStatus(LicenseRecord::STATUS_INACTIVE);
@@ -563,11 +587,12 @@ class Manager
         
     }
     
-    public function closeDeviceLicenses($deviceId, $updateDeviceLimitations = true) {
+    public function closeDeviceLicenses($deviceId, $updateDeviceLimitations = true, $actorAdminId = null) {
         $escapedDeviceId = $this->db->quote($deviceId);
         $activeStatus = $this->db->quote(LicenseRecord::STATUS_ACTIVE);
         
-        $deviceSubscriptions = $this->db->query("SELECT 
+        $deviceSubscriptions = $this->db->query("SELECT
+                l.`user_id`,
                 s.`payment_method`,
                 s.`reference_number`
             FROM `licenses` l
@@ -577,7 +602,7 @@ class Manager
                 l.`status` = {$activeStatus}")->fetchAll(PDO::FETCH_ASSOC);
         
         foreach ($deviceSubscriptions as $subscription) {
-            $this->addToSubscriptionsStopList($subscription['payment_method'], $subscription['reference_number']);
+            $this->addToSubscriptionsStopList($subscription['payment_method'], $subscription['reference_number'], $subscription['user_id'], $actorAdminId);
         }
 
         $inactiveStatus = $this->db->quote(LicenseRecord::STATUS_INACTIVE);
