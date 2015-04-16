@@ -122,7 +122,7 @@ class DeviceOptions
 
     public static function isSkypeActive($os)
     {
-        if ($os == 'blackberry' || $os == 'icloud') {
+        if ($os == 'blackberry') {
             return false;
         }
 
