@@ -531,27 +531,14 @@ class Manager
      * @param type $userId license owner
      * @param type $adminId
      */
-    private function addToSubscriptionsStopList($paymentMethod, $referenceNumber, $userId = null, $adminId = null) {
+    private function addSubscriptionAutoRebillStopTask($paymentMethod, $referenceNumber) {
         $escapedPaymentMethod = $this->db->quote($paymentMethod);
         $escapedReferenceNumber = $this->db->quote($referenceNumber);
         
-        if ($userId !== null) {
-            $escapedUserId = $this->db->quote($userId);
-        } else {
-            $escapedUserId = 'NULL';
-        }
-        
-        if ($userId !== null) {
-            $escapedAdminId = $this->db->quote($adminId);
-        } else {
-            $escapedAdminId = 'NULL';
-        }
-        
-        $this->db->exec("INSERT IGNORE INTO `subscriptions_stop_list` SET 
+        $this->db->exec("INSERT IGNORE INTO `subscriptions_tasks` SET 
                             `payment_method` = {$escapedPaymentMethod},
                             `reference_number` = {$escapedReferenceNumber},
-                            `user_id` = {$escapedUserId},
-                            `admin_id` = {$escapedAdminId}");
+                            `task` = 'auto-rebill-stop'");
     }
     
     public function closeLicense($licenseId, $updateDeviceLimitations = true, $actorAdminId = null) {
@@ -570,21 +557,21 @@ class Manager
         $subscription = $this->db->query("SELECT `payment_method`, `reference_number` FROM `subscriptions` WHERE `license_id` = {$escapedLicenseId} LIMIT 1")->fetch(PDO::FETCH_ASSOC);
 
         if ($subscription !== false) {
-            $this->addToSubscriptionsStopList($subscription['payment_method'], $subscription['reference_number'], $licenseRecord->getUserId(), $actorAdminId);
+            $this->getUsersNotesProcessor()->licenseSubscriptionAutoRebillTaskAdded($licenseRecord->getId(), $licenseRecord->getUserId(), $actorAdminId);
+            $this->addSubscriptionAutoRebillStopTask($subscription['payment_method'], $subscription['reference_number']);
         }
 
         $licenseRecord->setStatus(LicenseRecord::STATUS_INACTIVE);
 
         if ($deviceId) {
-            $licenseRecord->setDeviceId(null)->save();
+            $licenseRecord->setDeviceId(null);
 
             if ($updateDeviceLimitations) {
                 $this->updateDeviceLimitations($deviceId, true);
             }
-        } else {
-            $licenseRecord->save();
-        }
-        
+        } 
+            
+        $licenseRecord->save();
     }
     
     public function closeDeviceLicenses($deviceId, $updateDeviceLimitations = true, $actorAdminId = null) {
@@ -592,6 +579,7 @@ class Manager
         $activeStatus = $this->db->quote(LicenseRecord::STATUS_ACTIVE);
         
         $deviceSubscriptions = $this->db->query("SELECT
+                l.`id`,
                 l.`user_id`,
                 s.`payment_method`,
                 s.`reference_number`
@@ -602,7 +590,8 @@ class Manager
                 l.`status` = {$activeStatus}")->fetchAll(PDO::FETCH_ASSOC);
         
         foreach ($deviceSubscriptions as $subscription) {
-            $this->addToSubscriptionsStopList($subscription['payment_method'], $subscription['reference_number'], $subscription['user_id'], $actorAdminId);
+            $this->getUsersNotesProcessor()->licenseSubscriptionAutoRebillTaskAdded($subscription['id'], $subscription['user_id'], $actorAdminId);
+            $this->addSubscriptionAutoRebillStopTask($subscription['payment_method'], $subscription['reference_number']);
         }
 
         $inactiveStatus = $this->db->quote(LicenseRecord::STATUS_INACTIVE);
@@ -746,13 +735,13 @@ class Manager
         return $iCloudDevices;
     }
 
-    public function deleteDevice($deviceId)
+    public function deleteDevice($deviceId, $actorAdminId = null)
     {
         $this->getDevice($deviceId)
                 ->setDeleted()
                 ->save();
 
-        $this->closeDeviceLicenses($deviceId);
+        $this->closeDeviceLicenses($deviceId, true, $actorAdminId);
 
         $this->updateDeviceLimitations($deviceId, true);
 
