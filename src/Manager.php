@@ -699,6 +699,7 @@ class Manager
                     d.`app_version`,
                     d.`network`,
                     d.`model`,
+                    d.`deleted`,
                     IF(d.`last_visit` > {$minOnlineTime}, 1, 0) online,
                     IF(di.`last_sync` > {$minSyncTime} AND (di.`last_error` = {$syncErrorNone} OR di.`last_error` = {$syncErrorParse}), 1, 0) sync,
                     d.`rooted`,
