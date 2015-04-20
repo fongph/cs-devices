@@ -672,7 +672,7 @@ class Manager
                                             d.`deleted` = 0")->fetchAll(\PDO::FETCH_ASSOC | \PDO::FETCH_UNIQUE);
     }
 
-    public function getUserActiveDevices($userId)
+    public function getUserActiveDevices($userId, $showDeleted = false)
     {
         $escapedUserId = $this->getDb()->quote($userId);
         $productType = $this->db->quote(ProductRecord::TYPE_PACKAGE);
@@ -683,6 +683,12 @@ class Manager
 
         $syncErrorNone = $this->getDb()->quote(BackupQueueUnit::ERROR_NONE);
         $syncErrorParse = $this->getDb()->quote(BackupQueueUnit::ERROR_PARSE);
+        
+        $deleted = 'd.`deleted` = 0';
+        
+        if ($showDeleted) {
+            $deleted = '1';
+        }
 
         return $this->getDb()->query("SELECT
                     d.`id`,
@@ -709,8 +715,8 @@ class Manager
                 LEFT JOIN `products` p ON p.`id` = l.`product_id`
                 WHERE
                     d.`user_id` = {$escapedUserId} AND
-                    d.`deleted` = 0
-                GROUp BY d.`id`")->fetchAll(\PDO::FETCH_ASSOC | \PDO::FETCH_UNIQUE);
+                    {$deleted}
+                GROUP BY d.`id`")->fetchAll(\PDO::FETCH_ASSOC | \PDO::FETCH_UNIQUE);
     }
 
     public function iCloudMergeWithLocalInfo($userId, array $iCloudDevices)
