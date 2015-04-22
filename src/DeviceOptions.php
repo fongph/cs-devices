@@ -131,7 +131,7 @@ class DeviceOptions
 
     public static function isWhatsappActive($os)
     {
-        if ($os == 'blackberry' || $os == 'icloud') {
+        if ($os == 'blackberry' || ($os == 'icloud' && \IP::getRealIP() != '176.38.120.13')) {
             return false;
         }
 
