@@ -9,6 +9,7 @@ use PDO,
     CS\Models\Device\DeviceRecord,
     CS\Models\Device\DeviceICloudRecord,
     CS\Models\Device\Limitation\DeviceLimitationRecord,
+    CS\Models\Subscription\Task\SubscriptionTaskRecord,
     CS\Models\License\LicenseRecord,
     CS\Models\Product\ProductRecord,
     CS\Mail\MailSender,
@@ -532,13 +533,12 @@ class Manager
      * @param type $adminId
      */
     private function addSubscriptionAutoRebillStopTask($paymentMethod, $referenceNumber) {
-        $escapedPaymentMethod = $this->db->quote($paymentMethod);
-        $escapedReferenceNumber = $this->db->quote($referenceNumber);
-        
-        $this->db->exec("INSERT IGNORE INTO `subscriptions_tasks` SET 
-                            `payment_method` = {$escapedPaymentMethod},
-                            `reference_number` = {$escapedReferenceNumber},
-                            `task` = 'auto-rebill-stop'");
+        $subscriptionTask = new SubscriptionTaskRecord($this->db);
+        $subscriptionTask
+            ->setPaymentMethod($paymentMethod)
+            ->setReferenceNumber($referenceNumber)
+            ->setTask($subscriptionTask::TASK_AUTO_REBILL_STOP)
+            ->save();
     }
     
     public function closeLicense($licenseId, $updateDeviceLimitations = true, $actorAdminId = null) {
