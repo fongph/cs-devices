@@ -38,7 +38,7 @@
             "source": {
                 "type": "git",
                 "url": "git@bitbucket.org:boomersweb/cs-models.git",
-                "reference": "e7d6331b3db854cee63c6321cb153d5baa33b0eb"
+                "reference": "b2c134ed8963ff69dd49c9dee199d5023737acd0"
             },
             "require": {
                 "php": ">=5.4.0"
@@ -52,7 +52,7 @@
                     "CS\\Models\\": "src/"
                 }
             },
-            "time": "2015-04-28 11:48:18"
+            "time": "2015-04-28 13:24:24"
         },
         {
             "name": "boomers/cs-settings",
