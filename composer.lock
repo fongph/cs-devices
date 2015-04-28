@@ -38,7 +38,7 @@
             "source": {
                 "type": "git",
                 "url": "git@bitbucket.org:boomersweb/cs-models.git",
-                "reference": "6e5ccdd9665f6d012cd9ee381df0f0da4bb7647e"
+                "reference": "e7d6331b3db854cee63c6321cb153d5baa33b0eb"
             },
             "require": {
                 "php": ">=5.4.0"
@@ -52,7 +52,7 @@
                     "CS\\Models\\": "src/"
                 }
             },
-            "time": "2015-04-17 09:11:26"
+            "time": "2015-04-28 11:48:18"
         },
         {
             "name": "boomers/cs-settings",
@@ -60,7 +60,7 @@
             "source": {
                 "type": "git",
                 "url": "git@bitbucket.org:boomersweb/cs-settings.git",
-                "reference": "e5c68af64f06ec7fb846cd4ebf7e11172e86e3f3"
+                "reference": "1766d865f8a2f84c301e9fb6d7b14162a6fd794d"
             },
             "require": {
                 "php": ">=5.4.0"
@@ -71,7 +71,7 @@
                     "CS\\Settings\\": "src/"
                 }
             },
-            "time": "2015-04-15 11:14:28"
+            "time": "2015-04-23 08:15:10"
         },
         {
             "name": "boomers/cs-users",
@@ -79,7 +79,7 @@
             "source": {
                 "type": "git",
                 "url": "git@bitbucket.org:boomersweb/cs-users.git",
-                "reference": "bf13cd0767258f1b7b074d252b191c6de5297e6b"
+                "reference": "885dfd1ad387a9e099c94b1d4d054982d61c0a31"
             },
             "require": {
                 "boomers/cs-mail": "dev-master",
@@ -99,7 +99,7 @@
             "license": [
                 "MIT"
             ],
-            "time": "2015-04-17 08:39:19"
+            "time": "2015-04-22 11:01:20"
         },
         {
             "name": "boomers/ip",
@@ -485,16 +485,16 @@
         },
         {
             "name": "phpspec/prophecy",
-            "version": "1.4.0",
+            "version": "v1.4.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpspec/prophecy.git",
-                "reference": "8724cd239f8ef4c046f55a3b18b4d91cc7f3e4c5"
+                "reference": "3132b1f44c7bf2ec4c7eb2d3cb78fdeca760d373"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpspec/prophecy/zipball/8724cd239f8ef4c046f55a3b18b4d91cc7f3e4c5",
-                "reference": "8724cd239f8ef4c046f55a3b18b4d91cc7f3e4c5",
+                "url": "https://api.github.com/repos/phpspec/prophecy/zipball/3132b1f44c7bf2ec4c7eb2d3cb78fdeca760d373",
+                "reference": "3132b1f44c7bf2ec4c7eb2d3cb78fdeca760d373",
                 "shasum": ""
             },
             "require": {
@@ -541,7 +541,7 @@
                 "spy",
                 "stub"
             ],
-            "time": "2015-03-27 19:31:25"
+            "time": "2015-04-27 22:15:08"
         },
         {
             "name": "phpunit/php-code-coverage",

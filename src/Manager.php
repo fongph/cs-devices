@@ -435,6 +435,8 @@ class Manager
                 $licenseRecord->setDeviceId($deviceRecord->getId())
                         ->setStatus(LicenseRecord::STATUS_ACTIVE)
                         ->save();
+                
+                $this->licenseOnAssign($licenseRecord);
 
                 $usersNotesProcessor->licenseAssigned($licenseRecord->getId(), $deviceRecord->getId(), $deviceRecord->getUserId());
             }
@@ -742,6 +744,33 @@ class Manager
         return $iCloudDevices;
     }
 
+    /**
+     * License Event to call after assign any license...
+     * 
+     * @param LicenseRecord $license
+     */
+    public function licenseOnAssign(LicenseRecord $license) {
+        /**
+         * enable promo licenses
+         */
+        $usersManager = new \CS\Users\UsersManager($this->db);
+        $option = 'license-' . $license->getId() . ':on-assign:enable-promo';
+        $value = $usersManager->getUserOption($license->getUserId(), $option);
+        
+        if ($value !== false) {
+            $licensesToEnable = explode(',', $value);
+            
+            foreach ($licensesToEnable as $licenseId) {
+                $licenseRecord = new LicenseRecord($this->db);
+                $licenseRecord->load($licenseId)
+                        ->setStatus(LicenseRecord::STATUS_AVAILABLE)
+                        ->save();
+            }
+            
+            $usersManager->removeUserOption($license->getUserId(), $option);
+        }
+    }
+    
     public function deleteDevice($deviceId, $actorAdminId = null)
     {
         $this->getDevice($deviceId)
