@@ -52,6 +52,9 @@ class DeviceObserver extends DeviceObserverDependencies {
             ->setDeviceId($this->getDevice()->getId())
             ->setStatus(LicenseRecord::STATUS_ACTIVE)
             ->save();
+        
+         $deviceManager = new \CS\Devices\Manager($this->getMainDb());
+        $deviceManager->licenseOnAssign($this->getLicense());
 
         $deviceDb = $this->getDataDb($this->getDevice()->getId());
         $deviceDb->beginTransaction();
