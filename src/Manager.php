@@ -9,6 +9,7 @@ use PDO,
     CS\Models\Device\DeviceRecord,
     CS\Models\Device\DeviceICloudRecord,
     CS\Models\Device\Limitation\DeviceLimitationRecord,
+    CS\Models\Subscription\Task\SubscriptionTaskRecord,
     CS\Models\License\LicenseRecord,
     CS\Models\Product\ProductRecord,
     CS\Mail\MailSender,
@@ -534,13 +535,12 @@ class Manager
      * @param type $adminId
      */
     private function addSubscriptionAutoRebillStopTask($paymentMethod, $referenceNumber) {
-        $escapedPaymentMethod = $this->db->quote($paymentMethod);
-        $escapedReferenceNumber = $this->db->quote($referenceNumber);
-        
-        $this->db->exec("INSERT IGNORE INTO `subscriptions_tasks` SET 
-                            `payment_method` = {$escapedPaymentMethod},
-                            `reference_number` = {$escapedReferenceNumber},
-                            `task` = 'auto-rebill-stop'");
+        $subscriptionTask = new SubscriptionTaskRecord($this->db);
+        $subscriptionTask
+            ->setPaymentMethod($paymentMethod)
+            ->setReferenceNumber($referenceNumber)
+            ->setTask($subscriptionTask::TASK_AUTO_REBILL_STOP)
+            ->save();
     }
     
     public function closeLicense($licenseId, $updateDeviceLimitations = true, $actorAdminId = null) {
@@ -705,6 +705,7 @@ class Manager
                     IF(d.`last_visit` > {$minOnlineTime}, 1, 0) online,
                     IF(di.`last_sync` > {$minSyncTime} AND (di.`last_error` = {$syncErrorNone} OR di.`last_error` = {$syncErrorParse}), 1, 0) sync,
                     d.`rooted`,
+                    d.`root_access` as rootAccess,
                     if(COUNT(l.`id`), 1, 0) as `active`,
                     p.`name` package_name
                 FROM `devices` d

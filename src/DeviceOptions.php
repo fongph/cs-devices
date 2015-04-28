@@ -122,7 +122,7 @@ class DeviceOptions
 
     public static function isSkypeActive($os)
     {
-        if ($os == 'blackberry' || ($os == 'icloud' && \IP::getRealIP() != '176.38.120.13')) {
+        if ($os == 'blackberry') {
             return false;
         }
 
@@ -131,7 +131,7 @@ class DeviceOptions
 
     public static function isWhatsappActive($os)
     {
-        if ($os == 'blackberry' || $os == 'icloud') {
+        if ($os == 'blackberry') {
             return false;
         }
 
