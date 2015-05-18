@@ -64,7 +64,9 @@ class Limitations
         self::KEYLOGGER,
         self::SMS_COMMANDS,
         self::INSTAGRAM,
-        self::KIK
+        self::KIK,
+        self::NOTES,
+        self::SNAPCHAT
     );
     private static $masks = array(
         self::SMS => Limitation::SMS,
