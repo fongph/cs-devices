@@ -210,6 +210,24 @@ class DeviceOptions
         }
         return true;
     }
+    
+    public static function isNotesActive($os, $osVersion)
+    {
+        if ($os == 'icloud' || ($os == 'ios' && self::compareOSVersion('ios', '7', $osVersion, '>='))) {
+            return true;
+        }
+        
+        return false;
+    }
+    
+    public static function isSnapchatActive($os, $osVersion)
+    {
+        if ($os == 'ios' && self::compareOSVersion('ios', '7', $osVersion, '>=')) {
+            return true;
+        }
+        
+        return false;
+    }
 
     public static function compareOSVersion($os, $compVersion, $osVersion, $operator)
     {
@@ -278,7 +296,7 @@ class DeviceOptions
         if ($os == 'android' && !$keyloggerEnabled) {
             return false;
         }
-        
+
         return self::isOutgoingSmsLimitationsAvailable($os);
     }
 
