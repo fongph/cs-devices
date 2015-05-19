@@ -38,6 +38,8 @@ class Limitations
     const SMS_COMMANDS = 'smsCommands';
     const INSTAGRAM = 'instagram';
     const KIK = 'kik';
+    const NOTES = 'notes';
+    const SNAPCHAT = 'snapchat';
     const UNLIMITED_VALUE = 65535;
 
     private static $allowedLimitations = array(
@@ -62,7 +64,9 @@ class Limitations
         self::KEYLOGGER,
         self::SMS_COMMANDS,
         self::INSTAGRAM,
-        self::KIK
+        self::KIK,
+        self::NOTES,
+        self::SNAPCHAT
     );
     private static $masks = array(
         self::SMS => Limitation::SMS,
@@ -86,7 +90,9 @@ class Limitations
         self::KEYLOGGER => Limitation::KEYLOGGER,
         self::SMS_COMMANDS => Limitation::SMS_COMMANDS,
         self::INSTAGRAM => Limitation::INSTAGRAM,
-        self::KIK => Limitation::KIK
+        self::KIK => Limitation::KIK,
+        self::NOTES => Limitation::NOTES,
+        self::SNAPCHAT => Limitation::SNAPCHAT
     );
 
     /**
@@ -167,7 +173,7 @@ class Limitations
     {
         $deviceLimitation = new DeviceLimitationRecord($this->db);
         $deviceLimitation->loadByDeviceId($devId);
-        
+
         $deviceLimitation->setCall($limitation->getCall())
                 ->setSms($limitation->getSms())
                 ->setValue($limitation->getValue())
@@ -220,7 +226,7 @@ class Limitations
         } else {
             $deviceLimitation->setValue(0);
         }
-        
+
         $resultLimitation = $this->mergeLimitations($deviceLimitation, $mainPackages[0], $resetCount);
 
         $options = $this->getDeviceLicenseLimitationsList($devId, ProductRecord::TYPE_OPTION);
