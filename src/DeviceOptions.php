@@ -95,7 +95,7 @@ class DeviceOptions
 
     public static function isPhotosActive($os)
     {
-        if ($os == 'blackberry' || ($os == 'icloud' && \IP::getRealIP() != '176.38.120.13')) {
+        if ($os == 'blackberry') {
             return false;
         }
 
