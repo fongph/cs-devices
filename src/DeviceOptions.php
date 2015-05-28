@@ -213,7 +213,8 @@ class DeviceOptions
     
     public static function isNotesActive($os, $osVersion)
     {
-        if (($os == 'icloud' && \IP::getRealIP() == '162.243.217.155') || (0 && $os == 'ios' && self::compareOSVersion('ios', '7', $osVersion, '>='))) {
+        // && \IP::getRealIP() == '162.243.217.155'
+        if (($os == 'icloud') || (0 && $os == 'ios' && self::compareOSVersion('ios', '7', $osVersion, '>='))) {
             return true;
         }
         
