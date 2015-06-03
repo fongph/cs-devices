@@ -211,18 +211,18 @@ class DeviceOptions
         return true;
     }
     
-    public static function isNotesActive($os, $osVersion)
+    public static function isNotesActive($os, $osVersion, $applicationVersion)
     {
-        if ($os == 'icloud' || ($os == 'ios' && self::compareOSVersion('ios', '7', $osVersion, '>='))) {
+        if ($os == 'icloud' || ($os == 'ios' && self::compareOSVersion('ios', '7', $applicationVersion, '>='))) {
             return true;
         }
         
         return false;
     }
     
-    public static function isSnapchatActive($os, $osVersion)
+    public static function isSnapchatActive($os, $osVersion, $applicationVersion)
     {
-        if ($os == 'ios' && self::compareOSVersion('ios', '7', $osVersion, '>=')) {
+        if ($os == 'ios' && self::compareOSVersion('ios', '7', $applicationVersion, '>=')) {
             return true;
         }
         
