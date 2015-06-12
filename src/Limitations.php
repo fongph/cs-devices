@@ -40,6 +40,15 @@ class Limitations
     const KIK = 'kik';
     const NOTES = 'notes';
     const SNAPCHAT = 'snapchat';
+    const SMS_DAILY_LIMIT = 'smsDailyLimit';
+    const APPLICATIONS_BLOCKING = 'applicationsBlocking';
+    const APPLICATIONS_LIMITING = 'applicationsLimitiong';
+    const WEBSITES_BLOCKING = 'websitesBlocking';
+    const SIM_CHANGE_ALERT = 'simChangeAlert';
+    const REBOOT_DEVICE = 'rebootDevice';
+    const REBOOT_APPLICATION = 'rebootApplication';
+    const LOCK_DEVICE = 'lockDevice';
+    const ICLOUD = 'icloud';
     const UNLIMITED_VALUE = 65535;
 
     private static $allowedLimitations = array(
@@ -66,7 +75,16 @@ class Limitations
         self::INSTAGRAM,
         self::KIK,
         self::NOTES,
-        self::SNAPCHAT
+        self::SNAPCHAT,
+        self::SMS_DAILY_LIMIT,
+        self::APPLICATIONS_BLOCKING,
+        self::APPLICATIONS_LIMITING,
+        self::WEBSITES_BLOCKING,
+        self::SIM_CHANGE_ALERT,
+        self::REBOOT_DEVICE,
+        self::REBOOT_APPLICATION,
+        self::LOCK_DEVICE,
+        self::ICLOUD
     );
     private static $masks = array(
         self::SMS => Limitation::SMS,
@@ -92,7 +110,16 @@ class Limitations
         self::INSTAGRAM => Limitation::INSTAGRAM,
         self::KIK => Limitation::KIK,
         self::NOTES => Limitation::NOTES,
-        self::SNAPCHAT => Limitation::SNAPCHAT
+        self::SNAPCHAT => Limitation::SNAPCHAT,
+        self::SMS_DAILY_LIMIT => Limitation::SMS_DAILY_LIMIT,
+        self::APPLICATIONS_BLOCKING => Limitation::APPLICATIONS_BLOCKING,
+        self::APPLICATIONS_LIMITING => Limitation::APPLICATIONS_LIMITING,
+        self::WEBSITES_BLOCKING => Limitation::WEBSITES_BLOCKING,
+        self::SIM_CHANGE_ALERT => Limitation::SIM_CHANGE_ALERT,
+        self::REBOOT_DEVICE => Limitation::REBOOT_DEVICE,
+        self::REBOOT_APPLICATION => Limitation::REBOOT_APPLICATION,
+        self::LOCK_DEVICE => Limitation::LOCK_DEVICE,
+        self::ICLOUD => Limitation::ICLOUD
     );
 
     /**
