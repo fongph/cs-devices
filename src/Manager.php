@@ -3,7 +3,6 @@
 namespace CS\Devices;
 
 use PDO,
-    CS\Queue\BackupQueueUnit,
     CS\Models\Site\SiteRecord,
     CS\Models\User\UserRecord,
     CS\Models\Device\DeviceRecord,
@@ -683,8 +682,8 @@ class Manager
         $minOnlineTime = time() - self::ONLINE_PERIOD;
         $minSyncTime = time() - self::SYNC_PERIOD;
 
-        $syncErrorNone = $this->getDb()->quote(BackupQueueUnit::ERROR_NONE);
-        $syncErrorParse = $this->getDb()->quote(BackupQueueUnit::ERROR_PARSE);
+        $syncErrorNone = $this->getDb()->quote(DeviceICloudRecord::ERROR_NONE);
+        $syncErrorParse = $this->getDb()->quote(DeviceICloudRecord::ERROR_PARSE);
         
         $deleted = 'd.`deleted` = 0';
         
