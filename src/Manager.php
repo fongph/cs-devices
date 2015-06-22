@@ -706,7 +706,9 @@ class Manager
                     d.`rooted`,
                     d.`root_access` as rootAccess,
                     if(COUNT(l.`id`), 1, 0) as `active`,
-                    p.`name` package_name
+                    p.`name` package_name,
+                    di.`last_error`,
+                    di.`processing`
                 FROM `devices` d
                 LEFT JOIN `devices_icloud` di ON
                     d.`os` = {$this->getDb()->quote(DeviceRecord::OS_ICLOUD)} AND
