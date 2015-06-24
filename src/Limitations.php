@@ -214,7 +214,9 @@ class Limitations
         $result = $this->db->query("SELECT
                                 `sms`,
                                 `call`,
-                                `value`
+                                `value`,
+                                `saved_sms`,
+                                `saved_call`
                             FROM 
                                 `devices_limitations`
                             WHERE 
