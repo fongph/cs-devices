@@ -3,7 +3,6 @@
 namespace CS\Devices;
 
 use PDO,
-    CS\Queue\BackupQueueUnit,
     CS\Models\Site\SiteRecord,
     CS\Models\User\UserRecord,
     CS\Models\Device\DeviceRecord,
@@ -684,8 +683,8 @@ class Manager
         $minOnlineTime = time() - self::ONLINE_PERIOD;
         $minSyncTime = time() - self::SYNC_PERIOD;
 
-        $syncErrorNone = $this->getDb()->quote(BackupQueueUnit::ERROR_NONE);
-        $syncErrorParse = $this->getDb()->quote(BackupQueueUnit::ERROR_PARSE);
+        $syncErrorNone = $this->getDb()->quote(DeviceICloudRecord::ERROR_NONE);
+        $syncErrorParse = $this->getDb()->quote(DeviceICloudRecord::ERROR_PARSE);
         
         $deleted = 'd.`deleted` = 0';
         
@@ -708,7 +707,9 @@ class Manager
                     d.`rooted`,
                     d.`root_access` as rootAccess,
                     if(COUNT(l.`id`), 1, 0) as `active`,
-                    p.`name` package_name
+                    p.`name` package_name,
+                    di.`last_error`,
+                    di.`processing`
                 FROM `devices` d
                 LEFT JOIN `devices_icloud` di ON
                     d.`os` = {$this->getDb()->quote(DeviceRecord::OS_ICLOUD)} AND

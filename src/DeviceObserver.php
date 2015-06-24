@@ -4,6 +4,7 @@ namespace CS\Devices;
 
 use CS\Models\Product\ProductRecord;
 use CS\Models\License\LicenseRecord;
+use CS\Models\Device\DeviceModulesRecord;
 use CS\Models\Device\Limitation\DeviceLimitationRecord;
 
 class DeviceObserver extends DeviceObserverDependencies {
@@ -52,7 +53,7 @@ class DeviceObserver extends DeviceObserverDependencies {
             ->setStatus(LicenseRecord::STATUS_ACTIVE)
             ->save();
         
-         $deviceManager = new \CS\Devices\Manager($this->getMainDb());
+        $deviceManager = new \CS\Devices\Manager($this->getMainDb());
         $deviceManager->licenseOnAssign($this->getLicense());
 
         $deviceDb = $this->getDataDb($this->getDevice()->getId());
@@ -66,6 +67,9 @@ class DeviceObserver extends DeviceObserverDependencies {
             ->save();
         (new Limitations($this->getMainDb()))
             ->updateDeviceLimitations($this->getDevice()->getId(), true);
+        (new DeviceModulesRecord($this->getMainDb()))
+            ->setDevId($this->getDevice()->getId())
+            ->save();
 
         if($deviceDb->commit() && $this->getMainDb()->commit()){
             $this->afterSave();
