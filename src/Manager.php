@@ -482,10 +482,10 @@ class Manager
         $limitations->decrementLimitation($devId, $option);
     }
 
-    public function updateDeviceLimitations($devId, $resetCount = false)
+    public function updateDeviceLimitations($devId, $packageUpdated = false, $optionsUpdated = false)
     {
         $limitations = new Limitations($this->db);
-        $limitations->updateDeviceLimitations($devId, $resetCount);
+        $limitations->updateDeviceLimitations($devId, $packageUpdated, $optionsUpdated);
     }
 
     public function isUserLicenseAvailable($id, $userId)
@@ -566,11 +566,12 @@ class Manager
         $licenseRecord->setStatus(LicenseRecord::STATUS_INACTIVE);
 
         if ($deviceId) {
-            $licenseRecord->setDeviceId(null);
+            $licenseRecord->setDeviceId(null)->save();
 
             if ($updateDeviceLimitations) {
-                $this->updateDeviceLimitations($deviceId, true);
+                $this->updateDeviceLimitations($deviceId, true, true);
             }
+            return;
         } 
             
         $licenseRecord->save();
@@ -600,7 +601,7 @@ class Manager
         $this->getDb()->exec("UPDATE `licenses` SET `status` = {$inactiveStatus}, `device_id` = NULL WHERE `device_id` = {$escapedDeviceId}");
         
         if ($updateDeviceLimitations) {
-            $this->updateDeviceLimitations($deviceId, true);
+            $this->updateDeviceLimitations($deviceId, true, true);
         }
     }
 
@@ -617,8 +618,8 @@ class Manager
 
             if ($license->getProductType() == ProductRecord::TYPE_PACKAGE) {
                 $this->updateDeviceLimitations($deviceId, true);
-            } else {
-                $this->updateDeviceLimitations($deviceId);
+            } elseif ($license->getProductType() == ProductRecord::TYPE_OPTION) {
+                $this->updateDeviceLimitations($deviceId, false, true);
             }
 
             return $this->db->commit();
@@ -779,8 +780,6 @@ class Manager
                 ->save();
 
         $this->closeDeviceLicenses($deviceId, true, $actorAdminId);
-
-        $this->updateDeviceLimitations($deviceId, true);
 
         $this->getUsersNotesProcessor()->deviceDeleted($deviceId);
     }

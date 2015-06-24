@@ -26,9 +26,8 @@ class DeviceObserver extends DeviceObserverDependencies {
         $deviceManager = new \CS\Devices\Manager($this->getMainDb());
         $deviceManager->licenseOnAssign($this->getLicense());
         
-        $resetCount = ($this->getLicense()->getProductType() == ProductRecord::TYPE_PACKAGE);
         $limitations = new Limitations($this->getMainDb());
-        $limitations->updateDeviceLimitations($this->getDevice()->getId(), $resetCount);
+        $limitations->updateDeviceLimitations($this->getDevice()->getId(), true);
 
         if($this->getMainDb()->commit()) {
             $this->afterSave();

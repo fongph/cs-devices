@@ -232,7 +232,7 @@ class Limitations
                         ->setValue($result['value']);
     }
 
-    public function updateDeviceLimitations($devId, $resetCount = false)
+    public function updateDeviceLimitations($devId, $packageUpdated = false, $optionsUpdated = false)
     {
         $mainPackages = $this->getDeviceLicenseLimitationsList($devId);
 
@@ -248,21 +248,61 @@ class Limitations
             return;
         }
 
-        if ($resetCount) {
-            $deviceLimitation = $this->clearLimitation($deviceLimitation);
-        } else {
-            $deviceLimitation->setValue(0);
+        $package = $mainPackages[0];
+        $options = $this->getDeviceOptionsResult($devId);
+
+        if ($packageUpdated) {
+            if ($deviceLimitation->getSavedSms() === null) {
+                $deviceLimitation->setSms($package['sms']);
+            } else {
+                $deviceLimitation->setSavedSms($package['sms']);
+            }
+
+            if ($deviceLimitation->getSavedCall() === null) {
+                $deviceLimitation->setCall($package['call']);
+            } else {
+                $deviceLimitation->setSavedCall($package['call']);
+            }
         }
 
-        $resultLimitation = $this->mergeLimitations($deviceLimitation, $mainPackages[0], $resetCount);
+        if ($optionsUpdated) {
+            if ($options->hasOption(Limitation::SMS) && $deviceLimitation->getSavedSms() === null) {
+                $deviceLimitation->setSavedSms($deviceLimitation->getSms());
+            } elseif (!$options->hasOption(Limitation::SMS) && $deviceLimitation->getSavedSms() !== null) {
+                $deviceLimitation->setSms($deviceLimitation->getSavedSms());
+            }
+
+            if ($options->hasOption(Limitation::CALL) && $deviceLimitation->getSavedCall() === null) {
+                $deviceLimitation->setSavedCall($deviceLimitation->getCall());
+            } elseif (!$options->hasOption(Limitation::CALL) && $deviceLimitation->getSavedCall() !== null) {
+                $deviceLimitation->setCall($deviceLimitation->getSavedCall());
+            }
+        }
+
+        if ($options->getSms() === Limitations::UNLIMITED_VALUE) {
+            $deviceLimitation->setSms(Limitations::UNLIMITED_VALUE);
+        }
+
+        if ($options->getSms() === Limitations::UNLIMITED_VALUE) {
+            $deviceLimitation->setCall(Limitations::UNLIMITED_VALUE);
+        }
+
+        $deviceLimitation->setValue($package['value'] | $options->getValue())->save();
+    }
+
+    private function getDeviceOptionsResult($devId)
+    {
+        $result = new Limitation();
 
         $options = $this->getDeviceLicenseLimitationsList($devId, ProductRecord::TYPE_OPTION);
 
         foreach ($options as $optionLimitations) {
-            $resultLimitation = $this->mergeLimitations($resultLimitation, $optionLimitations, true);
+            $option = new Limitation($optionLimitations['sms'], $optionLimitations['call'], $optionLimitations['value']);
+
+            $result->merge($option, true);
         }
 
-        $deviceLimitation->save();
+        return $result;
     }
 
     private function mergeLimitations(DeviceLimitationRecord $deviceLimitation, $limitations, $resetCount = false)
@@ -291,7 +331,9 @@ class Limitations
     {
         return $deviceLimitation->setSms(0)
                         ->setCall(0)
-                        ->setValue(0);
+                        ->setValue(0)
+                        ->setSavedSms(null)
+                        ->setSavedCall(null);
     }
 
 }
