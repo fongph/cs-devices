@@ -279,11 +279,11 @@ class Limitations
             }
         }
 
-        if ($options->getSms() === Limitations::UNLIMITED_VALUE) {
+        if ($options->getSms() == Limitations::UNLIMITED_VALUE) {
             $deviceLimitation->setSms(Limitations::UNLIMITED_VALUE);
         }
 
-        if ($options->getSms() === Limitations::UNLIMITED_VALUE) {
+        if ($options->getSms() == Limitations::UNLIMITED_VALUE) {
             $deviceLimitation->setCall(Limitations::UNLIMITED_VALUE);
         }
 
