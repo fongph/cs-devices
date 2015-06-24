@@ -270,12 +270,14 @@ class Limitations
                 $deviceLimitation->setSavedSms($deviceLimitation->getSms());
             } elseif (!$options->hasOption(Limitation::SMS) && $deviceLimitation->getSavedSms() !== null) {
                 $deviceLimitation->setSms($deviceLimitation->getSavedSms());
+                $deviceLimitation->setSavedSms(null);
             }
 
             if ($options->hasOption(Limitation::CALL) && $deviceLimitation->getSavedCall() === null) {
                 $deviceLimitation->setSavedCall($deviceLimitation->getCall());
             } elseif (!$options->hasOption(Limitation::CALL) && $deviceLimitation->getSavedCall() !== null) {
                 $deviceLimitation->setCall($deviceLimitation->getSavedCall());
+                $deviceLimitation->setSavedCall(null);
             }
         }
 
