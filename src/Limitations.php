@@ -283,7 +283,7 @@ class Limitations
             $deviceLimitation->setSms(Limitations::UNLIMITED_VALUE);
         }
 
-        if ($options->getSms() == Limitations::UNLIMITED_VALUE) {
+        if ($options->getCall() == Limitations::UNLIMITED_VALUE) {
             $deviceLimitation->setCall(Limitations::UNLIMITED_VALUE);
         }
 
