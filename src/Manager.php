@@ -423,6 +423,12 @@ class Manager
                 ->setName($name)
                 ->save();
 
+        $eventManager = \EventManager::getInstance();
+        $eventManager->emit('device-added', array(
+            'userId' => $deviceRecord->getUserId(),
+            'deviceId' => $deviceRecord->getId()
+        ));
+        
         $usersNotesProcessor->deviceAdded($deviceRecord->getId(), $deviceRecord->getUserId());
 
         if ($info['license_id'] !== null) {
@@ -435,7 +441,7 @@ class Manager
                 $licenseRecord->setDeviceId($deviceRecord->getId())
                         ->setStatus(LicenseRecord::STATUS_ACTIVE)
                         ->save();
-                
+
                 $this->licenseOnAssign($licenseRecord);
 
                 $usersNotesProcessor->licenseAssigned($licenseRecord->getId(), $deviceRecord->getId(), $deviceRecord->getUserId());
@@ -524,7 +530,7 @@ class Manager
 
         return $this->getDb()->exec("UPDATE `licenses` SET `status` = {$status}, `device_id` = NULL WHERE `device_id` = {$escapedDeviceId}");
     }
-    
+
     /**
      * Add subscription data to specific list that will be proccessed with autorebill canceling
      * 
@@ -533,27 +539,29 @@ class Manager
      * @param type $userId license owner
      * @param type $adminId
      */
-    private function addSubscriptionAutoRebillStopTask($paymentMethod, $referenceNumber) {
+    private function addSubscriptionAutoRebillStopTask($paymentMethod, $referenceNumber)
+    {
         $subscriptionTask = new SubscriptionTaskRecord($this->db);
         $subscriptionTask
-            ->setPaymentMethod($paymentMethod)
-            ->setReferenceNumber($referenceNumber)
-            ->setTask($subscriptionTask::TASK_AUTO_REBILL_STOP)
-            ->save();
+                ->setPaymentMethod($paymentMethod)
+                ->setReferenceNumber($referenceNumber)
+                ->setTask($subscriptionTask::TASK_AUTO_REBILL_STOP)
+                ->save();
     }
-    
-    public function closeLicense($licenseId, $updateDeviceLimitations = true, $actorAdminId = null) {
+
+    public function closeLicense($licenseId, $updateDeviceLimitations = true, $actorAdminId = null)
+    {
         $licenseRecord = new LicenseRecord($this->db);
         $licenseRecord->load($licenseId);
-        
+
         $deviceId = $licenseRecord->getDeviceId();
-        
+
         // close all device licenses if license is main
         if ($deviceId && $licenseRecord->getProductType() === ProductRecord::TYPE_PACKAGE) {
             $this->closeDeviceLicenses($licenseRecord->getDeviceId(), $updateDeviceLimitations);
             return;
         }
-        
+
         $escapedLicenseId = $this->db->quote($licenseId);
         $subscription = $this->db->query("SELECT `payment_method`, `reference_number` FROM `subscriptions` WHERE `license_id` = {$escapedLicenseId} LIMIT 1")->fetch(PDO::FETCH_ASSOC);
 
@@ -571,15 +579,16 @@ class Manager
                 $this->updateDeviceLimitations($deviceId, true, true);
             }
             return;
-        } 
-            
+        }
+
         $licenseRecord->save();
     }
-    
-    public function closeDeviceLicenses($deviceId, $updateDeviceLimitations = true, $actorAdminId = null) {
+
+    public function closeDeviceLicenses($deviceId, $updateDeviceLimitations = true, $actorAdminId = null)
+    {
         $escapedDeviceId = $this->db->quote($deviceId);
         $activeStatus = $this->db->quote(LicenseRecord::STATUS_ACTIVE);
-        
+
         $deviceSubscriptions = $this->db->query("SELECT
                 l.`id`,
                 l.`user_id`,
@@ -590,7 +599,7 @@ class Manager
             WHERE
                 l.`device_id` = {$escapedDeviceId} AND
                 l.`status` = {$activeStatus}")->fetchAll(PDO::FETCH_ASSOC);
-        
+
         foreach ($deviceSubscriptions as $subscription) {
             $this->getUsersNotesProcessor()->licenseSubscriptionAutoRebillTaskAdded($subscription['id'], $subscription['user_id'], $actorAdminId);
             $this->addSubscriptionAutoRebillStopTask($subscription['payment_method'], $subscription['reference_number']);
@@ -598,7 +607,7 @@ class Manager
 
         $inactiveStatus = $this->db->quote(LicenseRecord::STATUS_INACTIVE);
         $this->getDb()->exec("UPDATE `licenses` SET `status` = {$inactiveStatus}, `device_id` = NULL WHERE `device_id` = {$escapedDeviceId}");
-        
+
         if ($updateDeviceLimitations) {
             $this->updateDeviceLimitations($deviceId, true, true);
         }
@@ -685,9 +694,9 @@ class Manager
 
         $syncErrorNone = $this->getDb()->quote(DeviceICloudRecord::ERROR_NONE);
         $syncErrorParse = $this->getDb()->quote(DeviceICloudRecord::ERROR_PARSE);
-        
+
         $deleted = 'd.`deleted` = 0';
-        
+
         if ($showDeleted) {
             $deleted = '1';
         }
@@ -752,28 +761,29 @@ class Manager
      * 
      * @param LicenseRecord $license
      */
-    public function licenseOnAssign(LicenseRecord $license) {
+    public function licenseOnAssign(LicenseRecord $license)
+    {
         /**
          * enable promo licenses
          */
         $usersManager = new \CS\Users\UsersManager($this->db);
         $option = 'license-' . $license->getId() . ':on-assign:enable-promo';
         $value = $usersManager->getUserOption($license->getUserId(), $option);
-        
+
         if ($value !== false) {
             $licensesToEnable = explode(',', $value);
-            
+
             foreach ($licensesToEnable as $licenseId) {
                 $licenseRecord = new LicenseRecord($this->db);
                 $licenseRecord->load($licenseId)
                         ->setStatus(LicenseRecord::STATUS_AVAILABLE)
                         ->save();
             }
-            
+
             $usersManager->removeUserOption($license->getUserId(), $option);
         }
     }
-    
+
     public function deleteDevice($deviceId, $actorAdminId = null)
     {
         $this->getDevice($deviceId)

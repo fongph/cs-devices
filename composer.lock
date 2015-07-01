@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "4656f373eb8e86615e045bb44e407b5d",
+    "hash": "07fb388de0839f102fbd83f1a27e9e27",
     "packages": [
         {
             "name": "boomers/cs-mail",
@@ -12,7 +12,7 @@
             "source": {
                 "type": "git",
                 "url": "git@bitbucket.org:boomersweb/cs-mail.git",
-                "reference": "954d8a4d151db8780cf925a90e4be3343d5ea4ac"
+                "reference": "c4107e4578f068eed5787e4d4966144883581dbd"
             },
             "require": {
                 "guzzlehttp/guzzle": "~5.0",
@@ -30,7 +30,7 @@
             "license": [
                 "MIT"
             ],
-            "time": "2015-05-26 10:07:26"
+            "time": "2015-06-26 09:43:20"
         },
         {
             "name": "boomers/cs-models",
@@ -38,7 +38,7 @@
             "source": {
                 "type": "git",
                 "url": "git@bitbucket.org:boomersweb/cs-models.git",
-                "reference": "5039b81a188312d80768413188918d0330d6a9ea"
+                "reference": "b43f78bf0e011a66bdb9b0504b8ff9f515d9b755"
             },
             "require": {
                 "php": ">=5.4.0"
@@ -52,7 +52,7 @@
                     "CS\\Models\\": "src/"
                 }
             },
-            "time": "2015-06-24 07:44:35"
+            "time": "2015-06-26 13:33:08"
         },
         {
             "name": "boomers/cs-settings",
@@ -119,6 +119,49 @@
                 ]
             },
             "time": "2014-11-11 13:33:06"
+        },
+        {
+            "name": "eventmanager/eventmanager",
+            "version": "1.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/ashwinks/php-event-manager.git",
+                "reference": "fc178e19b8f2b52f78eb7150d6c0cec802d9ca4e"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/ashwinks/php-event-manager/zipball/fc178e19b8f2b52f78eb7150d6c0cec802d9ca4e",
+                "reference": "fc178e19b8f2b52f78eb7150d6c0cec802d9ca4e",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.3.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-0": {
+                    "EventManager": "."
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Ashwin Surajbali",
+                    "email": "ashwin@redinkdesign.net",
+                    "homepage": "http://www.redinkdesign.co"
+                }
+            ],
+            "description": "PHP Event Manager",
+            "homepage": "https://github.com/ashwinks/php-event-manager.git",
+            "keywords": [
+                "event driven",
+                "event manager",
+                "events"
+            ],
+            "time": "2014-02-28 19:03:07"
         },
         {
             "name": "guzzlehttp/guzzle",
@@ -545,16 +588,16 @@
         },
         {
             "name": "phpunit/php-code-coverage",
-            "version": "2.1.6",
+            "version": "2.1.7",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/php-code-coverage.git",
-                "reference": "631e365cf26bb2c078683e8d9bcf8bc631ac4d44"
+                "reference": "07e27765596d72c378a6103e80da5d84e802f1e4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/php-code-coverage/zipball/631e365cf26bb2c078683e8d9bcf8bc631ac4d44",
-                "reference": "631e365cf26bb2c078683e8d9bcf8bc631ac4d44",
+                "url": "https://api.github.com/repos/sebastianbergmann/php-code-coverage/zipball/07e27765596d72c378a6103e80da5d84e802f1e4",
+                "reference": "07e27765596d72c378a6103e80da5d84e802f1e4",
                 "shasum": ""
             },
             "require": {
@@ -603,7 +646,7 @@
                 "testing",
                 "xunit"
             ],
-            "time": "2015-06-19 07:11:55"
+            "time": "2015-06-30 06:52:35"
         },
         {
             "name": "phpunit/php-file-iterator",
@@ -785,16 +828,16 @@
         },
         {
             "name": "phpunit/phpunit",
-            "version": "4.7.5",
+            "version": "4.7.6",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/phpunit.git",
-                "reference": "f6701ef3faea759acd1910a7751d8d102a7fd5bc"
+                "reference": "0ebabb4cda7d066be8391dfdbaf57fe70ac9a99b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/f6701ef3faea759acd1910a7751d8d102a7fd5bc",
-                "reference": "f6701ef3faea759acd1910a7751d8d102a7fd5bc",
+                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/0ebabb4cda7d066be8391dfdbaf57fe70ac9a99b",
+                "reference": "0ebabb4cda7d066be8391dfdbaf57fe70ac9a99b",
                 "shasum": ""
             },
             "require": {
@@ -853,7 +896,7 @@
                 "testing",
                 "xunit"
             ],
-            "time": "2015-06-21 07:23:36"
+            "time": "2015-06-30 06:53:57"
         },
         {
             "name": "phpunit/phpunit-mock-objects",

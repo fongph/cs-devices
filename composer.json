@@ -28,6 +28,7 @@
     "require": {
         "php": ">=5.4.0",
         "predis/predis": "1.0.0",
+        "eventmanager/eventmanager": "*",
         "boomers/cs-models": "dev-master",
         "boomers/cs-mail": "dev-master",
         "boomers/cs-users": "dev-master",
