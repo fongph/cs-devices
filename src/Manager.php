@@ -11,6 +11,7 @@ use PDO,
     CS\Models\Subscription\Task\SubscriptionTaskRecord,
     CS\Models\License\LicenseRecord,
     CS\Models\Product\ProductRecord,
+    EventManager\EventManager,
     CS\Mail\MailSender,
     CS\Users\UsersNotes;
 
@@ -423,7 +424,7 @@ class Manager
                 ->setName($name)
                 ->save();
 
-        $eventManager = \EventManager::getInstance();
+        $eventManager = EventManager::getInstance();
         $eventManager->emit('device-added', array(
             'userId' => $deviceRecord->getUserId(),
             'deviceId' => $deviceRecord->getId()
