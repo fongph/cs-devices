@@ -218,9 +218,9 @@ class DeviceOptions
     
     public static function isSnapchatActive($os, $osVersion, $applicationVersion)
     {
-        if ($os == 'ios' && self::compareOSVersion('ios', '7', $applicationVersion, '>=')) {
+        if ($os == 'ios' && $applicationVersion >= 7) {
             return true;
-        } else if ($os == 'android' && self::compareOSVersion('android', '12', $applicationVersion, '>=')) {
+        } else if ($os == 'android' && $applicationVersion >= 12) {
             return true;
         }
         
