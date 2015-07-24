@@ -196,10 +196,6 @@ class DeviceOptions
 
     public static function isLocationsActive($os)
     {
-        if ($os == 'icloud') {
-            return false;
-        }
-
         return true;
     }
 
@@ -223,6 +219,8 @@ class DeviceOptions
     public static function isSnapchatActive($os, $osVersion, $applicationVersion)
     {
         if ($os == 'ios' && self::compareOSVersion('ios', '7', $applicationVersion, '>=')) {
+            return true;
+        } else if ($os == 'android' && self::compareOSVersion('android', '12', $applicationVersion, '>=')) {
             return true;
         }
         
