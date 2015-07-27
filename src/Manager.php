@@ -429,7 +429,7 @@ class Manager
             'userId' => $deviceRecord->getUserId(),
             'deviceId' => $deviceRecord->getId()
         ));
-        
+
         $usersNotesProcessor->deviceAdded($deviceRecord->getId(), $deviceRecord->getUserId());
 
         if ($info['license_id'] !== null) {
@@ -480,6 +480,22 @@ class Manager
     {
         $limitations = new Limitations($this->db);
         return $limitations->isAllowed($devId, $option);
+    }
+
+    public function getDeviceLimitationCount($devId, $option)
+    {
+        if (!($option == Limitations::SMS || $option == Limitations::CALL)) {
+            throw new InvalidLimitationNameException("Bad limitation name or limitation is not countable!");
+        }
+
+        $devIdValue = $this->db->quote($devId);
+        $result = $this->db->query("SELECT `{$option}` FROM `devices_limitations` WHERE `device_id` = {$devIdValue} LIMIT 1")->fetchColumn();
+
+        if ($result === false) {
+            return 0;
+        }
+
+        return $result;
     }
 
     public function decrementLimitation($devId, $option)
