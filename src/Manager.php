@@ -397,6 +397,18 @@ class Manager
                 ->save();
         (new Limitations($this->db))
                 ->updateDeviceLimitations($this->device->getId(), true);
+        
+        $eventManager = EventManager::getInstance();
+        $eventManager->emit('device-added', array(
+            'userId' => $this->device->getUserId(),
+            'deviceId' => $this->device->getId()
+        ));
+        
+        $eventManager->emit('license-assigned', array(
+            'userId' => $this->device->getUserId(),
+            'deviceId' => $this->device->getId(),
+            'licenseId' => $this->license->getId()
+        ));
 
         $deviceDb->commit();
         $this->db->commit();
