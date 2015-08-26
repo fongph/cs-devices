@@ -446,6 +446,12 @@ class Manager
                 $this->licenseOnAssign($licenseRecord);
 
                 $usersNotesProcessor->licenseAssigned($licenseRecord->getId(), $deviceRecord->getId(), $deviceRecord->getUserId());
+                
+                $eventManager->emit('license-assigned', array(
+                    'userId' => $deviceRecord->getUserId(),
+                    'deviceId' => $deviceRecord->getId(),
+                    'licenseId' => $licenseRecord->getId()
+                ));
             }
         }
 
