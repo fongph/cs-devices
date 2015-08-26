@@ -30,6 +30,13 @@ class DeviceObserver extends DeviceObserverDependencies {
         $limitations = new Limitations($this->getMainDb());
         $limitations->updateDeviceLimitations($this->getDevice()->getId(), true);
 
+        $eventManager = \EventManager\EventManager::getInstance();
+        $eventManager->emit('license-assigned', array(
+            'userId' => $this->getDevice()->getUserId(),
+            'deviceId' => $this->getDevice()->getId(),
+            'licenseId' => $this->getLicense()->getId()
+        ));
+        
         if($this->getMainDb()->commit()) {
             $this->afterSave();
             return true;
