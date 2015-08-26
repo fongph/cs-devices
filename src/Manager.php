@@ -847,8 +847,8 @@ class Manager
         
         $eventManager = EventManager::getInstance();
         $eventManager->emit('device-deleted', array(
-            'userId' => $this->auth['id'],
-            'deviceId' => $this->di['devId'],
+            'userId' => $deviceRecord->getUserId(),
+            'deviceId' => $deviceRecord->getId(),
             'actorAdminId' => $actorAdminId
         ));
 
