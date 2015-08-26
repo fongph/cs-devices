@@ -612,20 +612,29 @@ class Manager
         $escapedDeviceId = $this->db->quote($deviceId);
         $activeStatus = $this->db->quote(LicenseRecord::STATUS_ACTIVE);
 
-        $deviceSubscriptions = $this->db->query("SELECT
+        $deviceLicenses = $this->db->query("SELECT
                 l.`id`,
                 l.`user_id`,
                 s.`payment_method`,
                 s.`reference_number`
             FROM `licenses` l
-            INNER JOIN `subscriptions` s ON s.`license_id` = l.`id`
+            LEFT JOIN `subscriptions` s ON s.`license_id` = l.`id`
             WHERE
                 l.`device_id` = {$escapedDeviceId} AND
                 l.`status` = {$activeStatus}")->fetchAll(PDO::FETCH_ASSOC);
 
-        foreach ($deviceSubscriptions as $subscription) {
-            $this->getUsersNotesProcessor()->licenseSubscriptionAutoRebillTaskAdded($subscription['id'], $subscription['user_id'], $actorAdminId);
-            $this->addSubscriptionAutoRebillStopTask($subscription['payment_method'], $subscription['reference_number']);
+        $eventManager = EventManager::getInstance();    
+        foreach ($deviceLicenses as $license) {
+            if (isset($license['payment_method'], $license['reference_number'])) {
+                $this->getUsersNotesProcessor()->licenseSubscriptionAutoRebillTaskAdded($license['id'], $license['user_id'], $actorAdminId);
+                $this->addSubscriptionAutoRebillStopTask($license['payment_method'], $license['reference_number']);
+            }
+            
+            $eventManager->emit('license-unassigned', array(
+                'userId' => $license['user_id'],
+                'deviceId' => $deviceId,
+                'licenseId' => $license['id']
+            ));
         }
 
         $inactiveStatus = $this->db->quote(LicenseRecord::STATUS_INACTIVE);
@@ -810,11 +819,19 @@ class Manager
 
     public function deleteDevice($deviceId, $actorAdminId = null)
     {
-        $this->getDevice($deviceId)
-                ->setDeleted()
+        $deviceRecord = $this->getDevice($deviceId);
+                
+        $deviceRecord->setDeleted()
                 ->save();
 
         $this->closeDeviceLicenses($deviceId, true, $actorAdminId);
+        
+        $eventManager = EventManager::getInstance();
+        $eventManager->emit('device-deleted', array(
+            'userId' => $this->auth['id'],
+            'deviceId' => $this->di['devId'],
+            'actorAdminId' => $actorAdminId
+        ));
 
         $this->getUsersNotesProcessor()->deviceDeleted($deviceId);
     }
