@@ -70,6 +70,18 @@ class DeviceObserver extends DeviceObserverDependencies {
         (new DeviceModulesRecord($this->getMainDb()))
             ->setDevId($this->getDevice()->getId())
             ->save();
+        
+        $eventManager = EventManager::getInstance();
+        $eventManager->emit('device-added', array(
+            'userId' => $this->device->getUserId(),
+            'deviceId' => $this->device->getId()
+        ));
+        
+        $eventManager->emit('license-assigned', array(
+            'userId' => $this->device->getUserId(),
+            'deviceId' => $this->device->getId(),
+            'licenseId' => $this->license->getId()
+        ));
 
         if($deviceDb->commit() && $this->getMainDb()->commit()){
             $this->afterSave();
