@@ -71,7 +71,7 @@ class DeviceObserver extends DeviceObserverDependencies {
             ->setDevId($this->getDevice()->getId())
             ->save();
         
-        $eventManager = EventManager::getInstance();
+        $eventManager = \EventManager\EventManager::getInstance();
         $eventManager->emit('device-added', array(
             'userId' => $this->device->getUserId(),
             'deviceId' => $this->device->getId()
