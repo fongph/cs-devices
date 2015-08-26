@@ -73,14 +73,14 @@ class DeviceObserver extends DeviceObserverDependencies {
         
         $eventManager = \EventManager\EventManager::getInstance();
         $eventManager->emit('device-added', array(
-            'userId' => $this->device->getUserId(),
-            'deviceId' => $this->device->getId()
+            'userId' => $this->getDevice()->getUserId(),
+            'deviceId' => $this->getDevice()->getId()
         ));
         
         $eventManager->emit('license-assigned', array(
-            'userId' => $this->device->getUserId(),
-            'deviceId' => $this->device->getId(),
-            'licenseId' => $this->license->getId()
+            'userId' => $this->getDevice()->getUserId(),
+            'deviceId' => $this->getDevice()->getId(),
+            'licenseId' => $this->getLicense()->getId()
         ));
 
         if($deviceDb->commit() && $this->getMainDb()->commit()){
