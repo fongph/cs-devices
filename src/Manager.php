@@ -770,7 +770,10 @@ class Manager
                     if(COUNT(l.`id`), 1, 0) as `active`,
                     p.`name` package_name,
                     di.`last_error`,
-                    di.`processing`
+                    di.`processing`,
+                    d.`power`,
+                    d.`last_visit`,
+                    UNIX_TIMESTAMP(d.`created_at`) created
                 FROM `devices` d
                 LEFT JOIN `devices_icloud` di ON
                     d.`os` = {$this->getDb()->quote(DeviceRecord::OS_ICLOUD)} AND
