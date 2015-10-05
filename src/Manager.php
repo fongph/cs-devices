@@ -771,6 +771,7 @@ class Manager
                     p.`name` package_name,
                     di.`last_error`,
                     di.`processing`,
+                    di.`last_commited`,
                     d.`power`,
                     d.`last_visit`,
                     UNIX_TIMESTAMP(d.`created_at`) created
