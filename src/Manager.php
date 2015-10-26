@@ -624,6 +624,41 @@ class Manager
         $this->unassignDeviceLicenses($deviceId, $updateDeviceLimitations, $actorAdminId, true);
     }
     
+    public function dropDeviceLicenses($deviceId, $actorAdminId) {
+        $escapedDeviceId = $this->db->quote($deviceId);
+
+        $deviceLicenses = $this->db->query("SELECT
+                l.`id`,
+                l.`user_id`,
+                s.`payment_method`,
+                s.`reference_number`
+            FROM `licenses` l
+            LEFT JOIN `subscriptions` s ON s.`license_id` = l.`id`
+            WHERE
+                l.`device_id` = {$escapedDeviceId}")->fetchAll(PDO::FETCH_ASSOC);
+
+        $eventManager = EventManager::getInstance();    
+        foreach ($deviceLicenses as $license) {
+            if (isset($license['payment_method'], $license['reference_number'])) {
+                $this->getUsersNotesProcessor()->licenseSubscriptionAutoRebillTaskAdded($license['id'], $license['user_id'], $actorAdminId);
+                $this->addSubscriptionAutoRebillStopTask($license['payment_method'], $license['reference_number']);
+            }
+            
+            $eventManager->emit('license-unassigned', array(
+                'userId' => $license['user_id'],
+                'deviceId' => $deviceId,
+                'licenseId' => $license['id'],
+                'actorAdminId' => $actorAdminId
+            ));
+        }
+
+        $status = $this->db->quote(LicenseRecord::STATUS_INACTIVE);
+        $reason = $this->db->quote(LicenseRecord::REASON_ADMINISTRATIONS);
+        $this->getDb()->exec("UPDATE `licenses` SET `status` = {$status}, `reason` = {$reason}, `device_id` = NULL WHERE `device_id` = {$escapedDeviceId}");
+        
+        $this->updateDeviceLimitations($deviceId, true, true);
+    }
+    
     public function unassignDeviceLicenses($deviceId, $updateDeviceLimitations = true, $actorAdminId = null, $close = false) {
         $escapedDeviceId = $this->db->quote($deviceId);
 
@@ -653,11 +688,13 @@ class Manager
         }
 
         if ($close) {
-            $newStatus = $this->db->quote(LicenseRecord::STATUS_INACTIVE);
+            $status = $this->db->quote(LicenseRecord::STATUS_INACTIVE);
+            $reason = $this->db->quote(LicenseRecord::REASON_DEVICE_DELETED);
+            $this->getDb()->exec("UPDATE `licenses` SET `status` = {$status}, `reason` = {$reason}, `device_id` = NULL WHERE `device_id` = {$escapedDeviceId}");
         } else {
-            $newStatus = $this->db->quote(LicenseRecord::STATUS_AVAILABLE);
+            $status = $this->db->quote(LicenseRecord::STATUS_AVAILABLE);
+            $this->getDb()->exec("UPDATE `licenses` SET `status` = {$status}, `device_id` = NULL WHERE `device_id` = {$escapedDeviceId}");
         }
-        $this->getDb()->exec("UPDATE `licenses` SET `status` = {$newStatus}, `device_id` = NULL WHERE `device_id` = {$escapedDeviceId}");
 
         if ($updateDeviceLimitations) {
             $this->updateDeviceLimitations($deviceId, true, true);
