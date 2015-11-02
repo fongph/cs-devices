@@ -883,8 +883,6 @@ class Manager
                 
         $deviceRecord->setDeleted()
                 ->save();
-
-        $this->closeDeviceLicenses($deviceId, true, $actorAdminId);
         
         $eventManager = EventManager::getInstance();
         $eventManager->emit('device-deleted', array(
