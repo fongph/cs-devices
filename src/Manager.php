@@ -839,6 +839,15 @@ class Manager
         return $iCloudDevices;
     }
 
+    public function getRelatedGiftLicenses($licenseId)
+    {
+        $escapedLicenseId = $this->db->quote($licenseId);
+        
+        return $this->db->query("SELECT `related_license_id`
+                    FROM `licenses_relations`
+                    WHERE `license_id` = {$escapedLicenseId} AND `type` = 'gift'")->fetchAll(\PDO::FETCH_COLUMN);
+    }
+    
     /**
      * License Event to call after assign any license...
      * 
@@ -849,21 +858,13 @@ class Manager
         /**
          * enable promo licenses
          */
-        $usersManager = new \CS\Users\UsersManager($this->db);
-        $option = 'license-' . $license->getId() . ':on-assign:enable-promo';
-        $value = $usersManager->getUserOption($license->getUserId(), $option);
+        $licensesToEnable = $this->getRelatedGiftLicenses($license->getId());
 
-        if ($value !== false) {
-            $licensesToEnable = explode(',', $value);
-
-            foreach ($licensesToEnable as $licenseId) {
-                $licenseRecord = new LicenseRecord($this->db);
-                $licenseRecord->load($licenseId)
-                        ->setStatus(LicenseRecord::STATUS_AVAILABLE)
-                        ->save();
-            }
-
-            $usersManager->removeUserOption($license->getUserId(), $option);
+        foreach ($licensesToEnable as $licenseId) {
+            $licenseRecord = new LicenseRecord($this->db);
+            $licenseRecord->load($licenseId)
+                    ->setStatus(LicenseRecord::STATUS_AVAILABLE)
+                    ->save();
         }
     }
 
