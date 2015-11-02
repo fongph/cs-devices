@@ -639,11 +639,6 @@ class Manager
 
         $eventManager = EventManager::getInstance();    
         foreach ($deviceLicenses as $license) {
-            if (isset($license['payment_method'], $license['reference_number'])) {
-                $this->getUsersNotesProcessor()->licenseSubscriptionAutoRebillTaskAdded($license['id'], $license['user_id'], $actorAdminId);
-                $this->addSubscriptionAutoRebillStopTask($license['payment_method'], $license['reference_number']);
-            }
-            
             $eventManager->emit('license-unassigned', array(
                 'userId' => $license['user_id'],
                 'deviceId' => $deviceId,
@@ -674,11 +669,6 @@ class Manager
 
         $eventManager = EventManager::getInstance();    
         foreach ($deviceLicenses as $license) {
-            if ($close && isset($license['payment_method'], $license['reference_number'])) {
-                $this->getUsersNotesProcessor()->licenseSubscriptionAutoRebillTaskAdded($license['id'], $license['user_id'], $actorAdminId);
-                $this->addSubscriptionAutoRebillStopTask($license['payment_method'], $license['reference_number']);
-            }
-            
             $eventManager->emit('license-unassigned', array(
                 'userId' => $license['user_id'],
                 'deviceId' => $deviceId,
