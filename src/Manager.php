@@ -788,6 +788,7 @@ class Manager
                     d.`app_version`,
                     d.`network`,
                     d.`model`,
+                    d.`timezone`,
                     d.`deleted`,
                     d.`android_xposed_installed`,
                     IF(d.`last_visit` > {$minOnlineTime}, 1, 0) online,
