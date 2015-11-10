@@ -364,7 +364,7 @@ class Manager
         $this->device
                 ->setUserId($this->userId)
                 ->setUniqueId($this->deviceUniqueId)
-                ->setName($this->name)
+                ->setName(self::remove4BytesCharacters($this->name))
                 ->setModel($this->model)
                 ->setOSVersion($this->osVer)
                 ->save();
@@ -397,13 +397,13 @@ class Manager
                 ->save();
         (new Limitations($this->db))
                 ->updateDeviceLimitations($this->device->getId(), true);
-        
+
         $eventManager = EventManager::getInstance();
         $eventManager->emit('device-added', array(
             'userId' => $this->device->getUserId(),
             'deviceId' => $this->device->getId()
         ));
-        
+
         $eventManager->emit('license-assigned', array(
             'userId' => $this->device->getUserId(),
             'deviceId' => $this->device->getId(),
@@ -433,7 +433,7 @@ class Manager
         $deviceRecord = new DeviceRecord($this->db);
         $deviceRecord->setUniqueId($deviceUniqueId)
                 ->setUserId($info['user_id'])
-                ->setName($name)
+                ->setName(self::remove4BytesCharacters($name))
                 ->save();
 
         $eventManager = EventManager::getInstance();
@@ -458,7 +458,7 @@ class Manager
                 $this->licenseOnAssign($licenseRecord);
 
                 $usersNotesProcessor->licenseAssigned($licenseRecord->getId(), $deviceRecord->getId(), $deviceRecord->getUserId());
-                
+
                 $eventManager->emit('license-assigned', array(
                     'userId' => $deviceRecord->getUserId(),
                     'deviceId' => $deviceRecord->getId(),
@@ -623,8 +623,9 @@ class Manager
     {
         $this->unassignDeviceLicenses($deviceId, $updateDeviceLimitations, $actorAdminId, true);
     }
-    
-    public function dropDeviceLicenses($deviceId, $actorAdminId) {
+
+    public function dropDeviceLicenses($deviceId, $actorAdminId)
+    {
         $escapedDeviceId = $this->db->quote($deviceId);
 
         $deviceLicenses = $this->db->query("SELECT
@@ -637,7 +638,7 @@ class Manager
             WHERE
                 l.`device_id` = {$escapedDeviceId}")->fetchAll(PDO::FETCH_ASSOC);
 
-        $eventManager = EventManager::getInstance();    
+        $eventManager = EventManager::getInstance();
         foreach ($deviceLicenses as $license) {
             $eventManager->emit('license-unassigned', array(
                 'userId' => $license['user_id'],
@@ -650,11 +651,12 @@ class Manager
         $status = $this->db->quote(LicenseRecord::STATUS_INACTIVE);
         $reason = $this->db->quote(LicenseRecord::REASON_ADMINISTRATIONS);
         $this->getDb()->exec("UPDATE `licenses` SET `status` = {$status}, `reason` = {$reason}, `device_id` = NULL WHERE `device_id` = {$escapedDeviceId}");
-        
+
         $this->updateDeviceLimitations($deviceId, true, true);
     }
-    
-    public function unassignDeviceLicenses($deviceId, $updateDeviceLimitations = true, $actorAdminId = null, $close = false) {
+
+    public function unassignDeviceLicenses($deviceId, $updateDeviceLimitations = true, $actorAdminId = null, $close = false)
+    {
         $escapedDeviceId = $this->db->quote($deviceId);
 
         $deviceLicenses = $this->db->query("SELECT
@@ -667,7 +669,7 @@ class Manager
             WHERE
                 l.`device_id` = {$escapedDeviceId}")->fetchAll(PDO::FETCH_ASSOC);
 
-        $eventManager = EventManager::getInstance();    
+        $eventManager = EventManager::getInstance();
         foreach ($deviceLicenses as $license) {
             $eventManager->emit('license-unassigned', array(
                 'userId' => $license['user_id'],
@@ -843,12 +845,12 @@ class Manager
     public function getRelatedGiftLicenses($licenseId)
     {
         $escapedLicenseId = $this->db->quote($licenseId);
-        
+
         return $this->db->query("SELECT `related_license_id`
                     FROM `licenses_relations`
                     WHERE `license_id` = {$escapedLicenseId} AND `type` = 'gift'")->fetchAll(\PDO::FETCH_COLUMN);
     }
-    
+
     /**
      * License Event to call after assign any license...
      * 
@@ -872,12 +874,12 @@ class Manager
     public function deleteDevice($deviceId, $actorAdminId = null)
     {
         $deviceRecord = $this->getDevice($deviceId);
-                
+
         $deviceRecord->setDeleted()
                 ->save();
-        
+
         $this->closeDeviceLicenses($deviceId, true, $actorAdminId);
-        
+
         $eventManager = EventManager::getInstance();
         $eventManager->emit('device-deleted', array(
             'userId' => $deviceRecord->getUserId(),
@@ -886,6 +888,11 @@ class Manager
         ));
 
         $this->getUsersNotesProcessor()->deviceDeleted($deviceId);
+    }
+
+    public static function remove4BytesCharacters($string)
+    {
+        return preg_replace('/[\xF0-\xF7].../s', "\xEF\xBF\xBD", $string);
     }
 
 }
