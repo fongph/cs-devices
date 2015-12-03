@@ -817,7 +817,8 @@ class Manager
                 WHERE
                     d.`user_id` = {$escapedUserId} AND
                     {$deleted}
-                GROUP BY d.`id`")->fetchAll(\PDO::FETCH_ASSOC | \PDO::FETCH_UNIQUE);
+                GROUP BY d.`id`
+                ORDER BY `active` DESC")->fetchAll(\PDO::FETCH_ASSOC | \PDO::FETCH_UNIQUE);
     }
 
     public function iCloudMergeWithLocalInfo($userId, array $iCloudDevices)
