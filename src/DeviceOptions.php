@@ -93,9 +93,11 @@ class DeviceOptions
         return true;
     }
 
-    public static function isPhotosActive($os)
+    public static function isPhotosActive($os, $osVersion)
     {
         if ($os == 'blackberry') {
+            return false;
+        } elseif ($os == 'icloud' && version_compare($osVersion, '9', '>=')) {
             return false;
         }
 
