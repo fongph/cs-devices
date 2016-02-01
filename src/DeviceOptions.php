@@ -213,10 +213,10 @@ class DeviceOptions
     
     public static function isNotesActive($os, $osVersion, $applicationVersion)
     {
-        if ($os == 'icloud' || ($os == 'ios' && self::compareOSVersion('ios', '7', $applicationVersion, '>='))) {
+        if ($os == 'ios' && self::compareOSVersion('ios', '7', $applicationVersion, '>=')) {
             return true;
-        } elseif ($os == 'icloud' && version_compare($osVersion, '9', '>=')) {
-            return false;
+        } elseif ($os == 'icloud' && version_compare($osVersion, '9', '<')) {
+            return true;
         }
         
         return false;
