@@ -48,9 +48,11 @@ class DeviceOptions
         return false;
     }
 
-    public static function isBrowserBookmarksActive($os)
+    public static function isBrowserBookmarksActive($os, $osVersion)
     {
         if ($os == 'blackberry') {
+            return false;
+        } elseif ($os == 'icloud' && version_compare($osVersion, '9', '>=')) {
             return false;
         }
 
@@ -213,6 +215,8 @@ class DeviceOptions
     {
         if ($os == 'icloud' || ($os == 'ios' && self::compareOSVersion('ios', '7', $applicationVersion, '>='))) {
             return true;
+        } elseif ($os == 'icloud' && version_compare($osVersion, '9', '>=')) {
+            return false;
         }
         
         return false;
