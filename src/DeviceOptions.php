@@ -99,8 +99,6 @@ class DeviceOptions
     {
         if ($os == 'blackberry') {
             return false;
-        } elseif ($os == 'icloud' && version_compare($osVersion, '9', '>=')) {
-            return false;
         }
 
         return true;
