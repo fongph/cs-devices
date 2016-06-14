@@ -160,9 +160,11 @@ class DeviceOptions
         return true;
     }
 
-    public static function isKikActive($os)
+    public static function isKikActive($os, $osVersion)
     {
-        if ($os == 'blackberry' || $os == 'icloud') {
+        if ($os == 'icloud') {
+            return self::compareOSVersion('ios', '9', $osVersion, '>=');
+        } elseif ($os == 'blackberry') {
             return false;
         }
 
@@ -210,7 +212,7 @@ class DeviceOptions
         }
         return true;
     }
-    
+
     public static function isNotesActive($os, $osVersion, $applicationVersion)
     {
         if ($os == 'ios' && self::compareOSVersion('ios', '7', $applicationVersion, '>=')) {
@@ -218,10 +220,10 @@ class DeviceOptions
         } elseif ($os == 'icloud' && version_compare($osVersion, '9', '<')) {
             return true;
         }
-        
+
         return false;
     }
-    
+
     public static function isSnapchatActive($os, $osVersion, $applicationVersion)
     {
         if ($os == 'ios' && $applicationVersion >= 7) {
@@ -229,7 +231,7 @@ class DeviceOptions
         } else if ($os == 'android' && $applicationVersion >= 12) {
             return true;
         }
-        
+
         return false;
     }
 
