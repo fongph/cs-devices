@@ -788,6 +788,7 @@ class Manager
                     d.`os`,
                     d.`os_version`,
                     d.`app_version`,
+                    d.`app_second_version`,
                     d.`network`,
                     d.`model`,
                     d.`timezone`,
