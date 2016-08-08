@@ -124,7 +124,9 @@ class DeviceOptions
 
     public static function isSkypeActive($os)
     {
-        if ($os == 'blackberry') {
+        if ($os == 'icloud') {
+            return self::compareOSVersion('ios', '9', $osVersion, '<');
+        } elseif ($os == 'blackberry') {
             return false;
         }
 
