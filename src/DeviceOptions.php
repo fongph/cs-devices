@@ -122,7 +122,7 @@ class DeviceOptions
         return true;
     }
 
-    public static function isSkypeActive($os)
+    public static function isSkypeActive($os, $osVersion)
     {
         if ($os == 'icloud') {
             return self::compareOSVersion('ios', '9', $osVersion, '<');
