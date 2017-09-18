@@ -6,23 +6,23 @@
     "repositories": [
         {
             "type": "git",
-            "url": "git@bitbucket.org:boomersweb/cs-models.git"
+            "url": "git@gitlab.dizboard.com:pumpic/cs-models.git"
         },
         {
             "type": "git",
-            "url": "git@bitbucket.org:boomersweb/cs-mail.git"
+            "url": "git@gitlab.dizboard.com:pumpic/cs-mail.git"
         },
         {
             "type": "git",
-            "url": "git@bitbucket.org:boomersweb/cs-users.git"
+            "url": "git@gitlab.dizboard.com:pumpic/cs-users.git"
         },
         {
             "type": "git",
-            "url": "git@bitbucket.org:boomersweb/cs-settings.git"
+            "url": "git@gitlab.dizboard.com:pumpic/cs-settings.git"
         },
         {
             "type": "git",
-            "url": "git@bitbucket.org:boomersweb/ip.git"
+            "url": "git@gitlab.dizboard.com:pumpic/ip.git"
         }
     ],
     "require": {
@@ -34,6 +34,7 @@
         "boomers/cs-users": "dev-master",
         "boomers/cs-settings": "dev-master",
         "boomers/ip": "dev-master"
+
     },
     "require-dev": {
         "phpunit/phpunit": "4.*"
